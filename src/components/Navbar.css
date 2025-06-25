@@ -4,41 +4,56 @@
   left: 0;
   right: 0;
   height: 80px;
-  background: var(--glass-bg);
+  background: rgba(26, 26, 26, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+  padding: 0 60px;
   z-index: 1000;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 26, 0.95);
+  z-index: -1;
 }
 
 .navbar-brand {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   text-decoration: none;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   transition: all 0.3s ease;
-  cursor: pointer;
+  z-index: 1001;
+  outline: none; /* Remove outline */
 }
 
 .navbar-brand:hover {
+  color: #ff6b6b;
   transform: scale(1.05);
+}
+
+.navbar-brand:focus {
+  outline: none; /* Remove focus outline */
 }
 
 .navbar-nav {
   display: flex;
   list-style: none;
-  gap: 2rem;
+  gap: 40px;
   margin: 0;
   padding: 0;
   align-items: center;
+  transition: all 0.3s ease;
 }
 
 .nav-item {
@@ -46,128 +61,167 @@
 }
 
 .nav-link {
-  color: var(--text-secondary);
+  color: #cccccc;
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  background: none;
+  padding: 12px 0;
   border: none;
+  background: none;
   cursor: pointer;
   font-family: inherit;
-  display: block;
-  width: 100%;
-  text-align: left;
-}
-
-.nav-link::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-  transition: left 0.5s;
-}
-
-.nav-link:hover::before {
-  left: 100%;
+  transition: all 0.3s ease;
+  position: relative;
+  text-transform: capitalize;
+  outline: none !important; /* Remove outline */
+  box-shadow: none !important; /* Remove box shadow */
 }
 
 .nav-link:hover {
-  color: var(--text-primary);
-  background: rgba(0, 212, 255, 0.1);
-  transform: translateY(-2px);
+  color: #ffffff;
+  transform: translateY(-1px);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-link:focus {
+  outline: none !important; /* Remove focus outline */
+  box-shadow: none !important;
+}
+
+.nav-link:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .nav-link.active {
-  color: var(--accent-primary);
-  background: rgba(0, 212, 255, 0.15);
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.nav-link.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 2px;
-  background: var(--accent-primary);
-  border-radius: 1px;
-  animation: navUnderline 2s ease-in-out infinite;
-}
-
-.theme-toggle-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
+.navbar-mobile {
+  display: none;
+  color: #ffffff;
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  outline: none; /* Remove outline */
 }
 
-.theme-toggle-btn:hover {
-  color: var(--accent-primary);
-  background: rgba(0, 212, 255, 0.1);
-  transform: scale(1.1);
+.navbar-mobile:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
 }
 
-.theme-toggle-btn:focus {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+.navbar-mobile:focus {
+  outline: none; /* Remove focus outline */
 }
 
-@keyframes navUnderline {
-  0%, 100% { width: 20px; }
-  50% { width: 40px; }
+.mobile-menu-icon {
+  transition: all 0.3s ease;
 }
 
-/* Focus states for accessibility */
-.nav-link:focus {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
 }
 
-.navbar-brand:focus {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
+/* Responsive Design */
+@media (max-width: 1024px) {
   .navbar {
-    padding: 0 1rem;
-  }
-  
-  .navbar-brand {
-    font-size: 1.5rem;
+    padding: 0 40px;
   }
   
   .navbar-nav {
-    gap: 1rem;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 30px;
+  }
+  
+  .navbar-nav {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 26, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-direction: column;
+    gap: 0;
+    padding: 30px 0;
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .navbar-nav-mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .nav-item {
+    width: 100%;
+    text-align: center;
   }
   
   .nav-link {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
+    display: block;
+    padding: 20px 30px;
+    font-size: 1.1rem;
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    outline: none; /* Remove outline for mobile */
+  }
+  
+  .nav-link:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    transform: translateX(10px);
+  }
+  
+  .nav-link:focus {
+    outline: none; /* Remove focus outline for mobile */
+  }
+  
+  .nav-link.active {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    border-left: 4px solid #ff6b6b;
+  }
+  
+  .navbar-mobile {
+    display: block;
+  }
+  
+  .mobile-menu-overlay {
+    display: block;
   }
 }
 
 @media (max-width: 480px) {
   .navbar {
-    padding: 0 0.8rem;
+    padding: 0 20px;
+    height: 70px;
   }
   
   .navbar-brand {
@@ -175,11 +229,90 @@
   }
   
   .navbar-nav {
-    gap: 0.5rem;
+    top: 70px;
+    padding: 20px 0;
   }
   
   .nav-link {
-    font-size: 0.8rem;
-    padding: 0.3rem 0.6rem;
+    padding: 18px 20px;
+    font-size: 1rem;
   }
-} 
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced animations */
+@keyframes navSlideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar-nav-mobile-open {
+  animation: navSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Removed focus styles that were causing outlines */
+/* Focus styles for accessibility - REMOVED */
+
+/* Hover effects enhancement */
+.nav-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-link:hover::after {
+  left: 100%;
+}
+
+/* Additional global outline removal */
+* {
+  outline: none !important;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+button:focus {
+  outline: none !important;
+}
+
+a:focus {
+  outline: none !important;
+}
+
+/* Additional global outline removal for navbar buttons */
+.navbar button {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -8,21 +8,39 @@ import './App.css';
 function App() {
   const [currentPage, setCurrentPage] = useState('about');
   const [theme, setTheme] = useState('dark');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
+  const handlePageChange = (newPage) => {
+    if (newPage !== currentPage) {
+      setIsTransitioning(true);
+      
+      // Delay the page change to allow exit animation
+      setTimeout(() => {
+        setCurrentPage(newPage);
+        setIsTransitioning(false);
+      }, 300);
+    }
+  };
+
   const renderPage = () => {
+    const pageProps = {
+      isTransitioning,
+      key: currentPage // Force re-render for animations
+    };
+
     switch (currentPage) {
       case 'about':
-        return <AboutMe />;
+        return <AboutMe {...pageProps} />;
       case 'projects':
-        return <MyProjects />;
+        return <MyProjects {...pageProps} />;
       case 'contact':
-        return <ContactMe />;
+        return <ContactMe {...pageProps} />;
       default:
-        return <AboutMe />;
+        return <AboutMe {...pageProps} />;
     }
   };
 
@@ -30,11 +48,13 @@ function App() {
     <div className="App">
       <Navbar 
         currentPage={currentPage} 
-        setCurrentPage={setCurrentPage}
+        setCurrentPage={handlePageChange}
         theme={theme}
         setTheme={setTheme}
       />
-      {renderPage()}
+      <div className={`page-container ${isTransitioning ? 'page-exit' : 'page-enter'}`}>
+        {renderPage()}
+      </div>
     </div>
   );
 }

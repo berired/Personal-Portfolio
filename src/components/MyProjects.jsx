@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProjectCard from './ProjectCard';
 import './MyProjects.css';
 
-const MyProjects = () => {
+const MyProjects = ({ isTransitioning }) => {
+  const [isVisible, setIsVisible] = useState(false);
   const [projects] = useState([
     {
       id: 1,
@@ -56,42 +57,50 @@ const MyProjects = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  useEffect(() => {
+    if (!isTransitioning) {
+      setIsVisible(true);
+    }
+  }, [isTransitioning]);
+
   const filteredProjects = selectedCategory === 'all' 
     ? projects 
     : projects.filter(project => project.category === selectedCategory);
 
   return (
-    <div className="projects-container">
-      <div className="projects-header">
-        <h1>My Projects</h1>
-        <p>Explore my work across different categories and technologies</p>
+    <div className={`projects-container ${isVisible ? 'fade-in' : ''}`}>
+      <div className="projects-header animate-slide-up">
+        <h1 className="gradient-text">Projects</h1>
+        <p className="animate-fade-in" style={{animationDelay: '0.2s'}}>A showcase of my work across different categories and technologies</p>
       </div>
 
       <div className="projects-content">
-        <div className="category-tabs">
+        <div className="category-tabs animate-slide-up stagger-animation" style={{animationDelay: '0.3s'}}>
           <button 
-            className={`category-tab ${selectedCategory === 'all' ? 'active' : ''}`}
+            className={`category-tab hover-lift ${selectedCategory === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedCategory('all')}
           >
             All Projects
           </button>
           <button 
-            className={`category-tab ${selectedCategory === 'personal projects' ? 'active' : ''}`}
+            className={`category-tab hover-lift ${selectedCategory === 'personal projects' ? 'active' : ''}`}
             onClick={() => setSelectedCategory('personal projects')}
           >
             Personal Projects
           </button>
           <button 
-            className={`category-tab ${selectedCategory === 'school projects' ? 'active' : ''}`}
+            className={`category-tab hover-lift ${selectedCategory === 'school projects' ? 'active' : ''}`}
             onClick={() => setSelectedCategory('school projects')}
           >
             School Projects
           </button>
         </div>
 
-        <div className="projects-grid">
-          {filteredProjects.map(project => (
-            <ProjectCard key={project.id} project={project} />
+        <div className="projects-grid stagger-animation">
+          {filteredProjects.map((project, index) => (
+            <div key={project.id} className="animate-scale-up" style={{animationDelay: `${0.5 + index * 0.1}s`}}>
+              <ProjectCard project={project} />
+            </div>
           ))}
         </div>
       </div>
@@ -99,4 +108,4 @@ const MyProjects = () => {
   );
 };
 
-export default MyProjects; 
+export default MyProjects;

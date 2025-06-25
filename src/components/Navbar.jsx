@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Navbar.css';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaSun, FaMoon, FaBars, FaTimes } from 'react-icons/fa';
 
 const Navbar = ({ currentPage, setCurrentPage, theme, setTheme }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const handleNavClick = (page) => {
     setCurrentPage(page);
+    setIsMobileMenuOpen(false); // Close mobile menu when item is clicked
   };
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -21,15 +28,16 @@ const Navbar = ({ currentPage, setCurrentPage, theme, setTheme }) => {
           handleNavClick('about');
         }}
       >
-        Portfolio
+        David Xander
       </a>
-      <ul className="navbar-nav">
+      
+      <ul className={`navbar-nav ${isMobileMenuOpen ? 'navbar-nav-mobile-open' : ''}`}>
         <li className="nav-item">
           <button 
             onClick={() => handleNavClick('about')}
             className={`nav-link ${currentPage === 'about' ? 'active' : ''}`}
           >
-            About Me
+            Home
           </button>
         </li>
         <li className="nav-item">
@@ -37,7 +45,7 @@ const Navbar = ({ currentPage, setCurrentPage, theme, setTheme }) => {
             onClick={() => handleNavClick('projects')}
             className={`nav-link ${currentPage === 'projects' ? 'active' : ''}`}
           >
-            My Projects
+            Projects
           </button>
         </li>
         <li className="nav-item">
@@ -45,17 +53,23 @@ const Navbar = ({ currentPage, setCurrentPage, theme, setTheme }) => {
             onClick={() => handleNavClick('contact')}
             className={`nav-link ${currentPage === 'contact' ? 'active' : ''}`}
           >
-            Contact Me
-          </button>
-        </li>
-        <li className="nav-item">
-          <button className="theme-toggle-btn" onClick={toggleTheme}>
-            {theme === 'dark' ? <FaSun /> : <FaMoon />}
+            Contacts
           </button>
         </li>
       </ul>
+      
+      <div className="navbar-mobile" onClick={toggleMobileMenu}>
+        {isMobileMenuOpen ? (
+          <FaTimes className="mobile-menu-icon" />
+        ) : (
+          <FaBars className="mobile-menu-icon" />
+        )}
+      </div>
+
+      {/* Mobile menu overlay */}
+      {isMobileMenuOpen && <div className="mobile-menu-overlay" onClick={toggleMobileMenu}></div>}
     </nav>
   );
 };
 
-export default Navbar; 
+export default Navbar;
