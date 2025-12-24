@@ -11,7 +11,7 @@ import {
   SiNodedotjs,
   SiGithub
 } from 'react-icons/si';
-import { FaCode, FaBrain, FaDatabase, FaCubes, FaChartLine, FaJava } from 'react-icons/fa';
+import { FaCode, FaBrain, FaDatabase, FaCubes, FaChartLine, FaJava, FaLaptop } from 'react-icons/fa';
 
 
 const AboutMe = ({ isTransitioning }) => {
@@ -35,32 +35,21 @@ const AboutMe = ({ isTransitioning }) => {
     { name: 'Java', icon: FaJava },
   ];
 
-  const favoriteSubjects = [
-    {
-      icon: <FaCode />,
-      title: 'Web Programming',
-      description: 'Building dynamic and responsive web applications using modern frameworks and technologies'
-    },
-    {
-      icon: <FaBrain />,
-      title: 'Machine Learning', 
-      description: 'Exploring algorithms and models that enable computers to learn and make predictions from data'
-    },
-    {
-      icon: <FaDatabase />,
-      title: 'Data Structures and Algorithms',
-      description: 'Mastering efficient data organization and problem-solving techniques for optimal performance'
-    },
-    {
-      icon: <FaCubes />,
-      title: 'Object Oriented Programming',
-      description: 'Designing and implementing scalable software solutions using OOP principles and design patterns'
-    },
-    {
-      icon: <FaChartLine />,
-      title: 'Data Science Programming',
-      description: 'Analyzing and visualizing complex datasets to extract meaningful insights and patterns'
-    }
+  const skills = [
+    { name: 'HTML/CSS', level: 90, icon: SiHtml5 },
+    { name: 'JavaScript', level: 90, icon: SiJavascript },
+    { name: 'MongoDB', level: 80, icon: FaDatabase },
+    { name: 'Express.js', level: 75, icon: FaCubes },
+    { name: 'React', level: 90, icon: SiReact },
+    { name: 'Node.js', level: 85, icon: SiNodedotjs },
+    { name: 'Python', level: 95, icon: SiPython },
+    { name: 'C++', level: 60, icon: SiCplusplus },
+    { name: 'Java', level: 65, icon: FaJava },
+    { name: 'GitHub', level: 85, icon: SiGithub },
+    { name: 'Firebase', level: 85, icon: FaBrain },
+    { name: 'Adobe Premier Pro', level: 85, icon: FaLaptop },
+    { name: 'Machine Learning', level: 70, icon: FaChartLine },
+    
   ];
 
   return (
@@ -142,25 +131,39 @@ const AboutMe = ({ isTransitioning }) => {
         </div>
       </div>
 
-      {/* Favorite Subjects Section */}
+      {/* Skills Section */}
       <div className="subjects-section">
         <div className="subjects-header animate-slide-up" style={{animationDelay: '1.1s'}}>
-          <h2 className="gradient-text">Favorite Subjects</h2>
+          <h2 className="gradient-text">Skills</h2>
           <p className="subjects-subtitle animate-fade-in" style={{animationDelay: '1.2s'}}>
-            Computer Science areas that I'm most passionate about
+            My technical proficiency in various technologies and tools
           </p>
         </div>
         
-        <div className="subjects-grid stagger-animation">
-          {favoriteSubjects.map((subject, index) => (
-            <div key={index} className="subject-card glass hover-lift animate-scale-up" style={{animationDelay: `${1.3 + index * 0.1}s`}}>
-              <div className="subject-icon pulse" style={{animationDelay: `${2.5 + index * 0.5}s`}}>
-                {subject.icon}
+        <div className="skills-container stagger-animation">
+          {skills.map((skill, index) => {
+            const IconComponent = skill.icon;
+            return (
+              <div key={index} className="skill-item animate-slide-up" style={{animationDelay: `${1.3 + index * 0.1}s`}}>
+                <div className="skill-header">
+                  <div className="skill-name">
+                    <IconComponent className="skill-icon" />
+                    <span>{skill.name}</span>
+                  </div>
+                  <span className="skill-percentage">{skill.level}%</span>
+                </div>
+                <div className="skill-bar">
+                  <div 
+                    className="skill-progress" 
+                    style={{
+                      '--skill-width': `${skill.level}%`,
+                      width: isVisible ? `${skill.level}%` : '0%'
+                    }}
+                  ></div>
+                </div>
               </div>
-              <h4 className="subject-title">{subject.title}</h4>
-              <p className="subject-description">{subject.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

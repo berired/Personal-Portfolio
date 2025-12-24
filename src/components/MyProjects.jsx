@@ -11,7 +11,8 @@ const MyProjects = ({ isTransitioning }) => {
       description: "A Coffee Shop Landing Page using React",
       techStack: "React, HTML, CSS",
       category: "personal projects",
-      imagePath: "/src/assets/project1.jpg"
+      imagePath: "/src/assets/project1.jpg",
+      link: "on github"
     },
     {
       id: 2,
@@ -19,7 +20,8 @@ const MyProjects = ({ isTransitioning }) => {
       description: "Web Design Scripting Finals",
       techStack: "HTML, CSS, JavaScript",
       category: "school projects",
-      imagePath: "/src/assets/project2.jpg"
+      imagePath: "/src/assets/project2.jpg",
+      link: "missing repo"
     },
     {
       id: 3,
@@ -27,7 +29,8 @@ const MyProjects = ({ isTransitioning }) => {
       description: "Multi-page Product Catalog for Web Programming Midterms",
       techStack: "React, JavaScript, CSS, HTML",
       category: "school projects",
-      imagePath: "/src/assets/project3.jpg"
+      imagePath: "/src/assets/project3.jpg",
+      link: "on github"
     },
     {
       id: 4,
@@ -35,7 +38,8 @@ const MyProjects = ({ isTransitioning }) => {
       description: "A restaurant locator website for STS Finals Project",
       techStack: "HTML, CSS, JavaScript",
       category: "school projects",
-      imagePath: "/src/assets/project4.jpg"
+      imagePath: "/src/assets/project4.jpg",
+      link: "on github"
     },
     {
       id: 5,
@@ -43,7 +47,8 @@ const MyProjects = ({ isTransitioning }) => {
       description: "A calendar bot for Discord using Python",
       techStack: "Python",
       category: "personal projects",
-      imagePath: "/src/assets/project5.jpg"
+      imagePath: "/src/assets/project5.jpg",
+      link: "on github"
     },
     {
       id: 6,
@@ -51,7 +56,44 @@ const MyProjects = ({ isTransitioning }) => {
       description: "A historical website for RPH Finals Project",
       techStack: "HTML, CSS, JavaScript",
       category: "school projects",
-      imagePath: "/src/assets/project6.jpg"
+      imagePath: "/src/assets/project6.jpg",
+      link: "on github"
+    },
+    {
+      id: 7,
+      name: "CatModoro",
+      description: "A Pomodoro timerapp dedicated to my girlfriend with a cat theme. With customizable timer, calendar & to-dos, heatmap, fully customizable website theme, and spotify player integration.",
+      techStack: "React, JavaScript, CSS, Firebase",
+      category: "personal projects",
+      imagePath: "/src/assets/project7.jpg",
+      link: "#https://catmodoro.vercel.app/"
+    },
+    {
+      id: 8,
+      name: "Tahanan ng mga Kwento",
+      description: "A children's book repository website for our Panitikan Finals Project",
+      techStack: "React, JavaScript, CSS",
+      category: "school projects",
+      imagePath: "/src/assets/project8.jpg",
+      link: "#https://tahananngmgakwento.vercel.app/"
+    },
+    {
+      id: 9,
+      name: "AdTalk Event Solution Inc. Landing Page",
+      description: "A landing page for a freelance client using React",
+      techStack: "React, JavaScript, CSS",
+      category: "freelance works",
+      imagePath: "/src/assets/project9.jpg",
+      link: "#https://adtalk.com.ph/"
+    },
+    {
+      id: 10,
+      name: "Glam Innovative Advertising Corp. Landing Page",
+      description: "A landing page for a freelance client using React",
+      techStack: "React, JavaScript, CSS",
+      category: "freelance works",
+      imagePath: "/src/assets/project10.jpg",
+      link: "#https://glam-landing.vercel.app/"
     }
   ]);
 
@@ -93,6 +135,12 @@ const MyProjects = ({ isTransitioning }) => {
             onClick={() => setSelectedCategory('school projects')}
           >
             School Projects
+          </button>
+          <button 
+            className={`category-tab hover-lift ${selectedCategory === 'freelance works' ? 'active' : ''}`}
+            onClick={() => setSelectedCategory('freelance works')}
+          >
+            Freelance Works
           </button>
         </div>
 

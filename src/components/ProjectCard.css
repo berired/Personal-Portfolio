@@ -114,6 +114,51 @@
   font-weight: 500;
 }
 
+.project-link-btn {
+  display: block;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+.view-project-btn {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8a80 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.view-project-btn:hover {
+  background: linear-gradient(135deg, #ff8a80 0%, #ff6b6b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.view-project-btn:active {
+  transform: translateY(0);
+}
+
+.project-link-text {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .project-content {

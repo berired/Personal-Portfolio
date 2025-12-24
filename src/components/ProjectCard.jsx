@@ -31,6 +31,11 @@ const ProjectCard = ({ project }) => {
     return <IconComponent />;
   };
 
+  // Check if link is a URL
+  const isUrl = (link) => {
+    return link && (link.startsWith('http://') || link.startsWith('https://') || link.startsWith('#http'));
+  };
+
   return (
     <div className="project-card">
       <div className="project-image-container">
@@ -60,6 +65,20 @@ const ProjectCard = ({ project }) => {
             ))}
           </div>
         </div>
+        
+        {project.link && (
+          isUrl(project.link) ? (
+            <a href={project.link.replace('#', '')} className="project-link-btn" target="_blank" rel="noopener noreferrer">
+              <button className="view-project-btn">
+                View Project
+              </button>
+            </a>
+          ) : (
+            <div className="project-link-text">
+              {project.link}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
