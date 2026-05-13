@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useBootSound } from '../../hooks/useBootSound'
+
+const TOTAL_BLOCKS = 36
+const BAR_MS = 580 // fills in 580ms — finishes before the 'ready' line at t=2600
 
 const LINES = [
   { text: '─────────────────────────────────────────────────', t: 0,    dim: true },
@@ -13,17 +16,51 @@ const LINES = [
   { text: '',                                                   t: 1500 },
   { text: 'Initialising  PORTFOLIO.SYS ...',                   t: 1600, amber: true },
   { text: '',                                                   t: 1750 },
-  { text: ' [████████████████████████████████████]  100%',     t: 2300 },
+  { progress: true,                                             t: 2300 },
   { text: '',                                                   t: 2450 },
   { text: ' PORTFOLIO OS  ready.',                              t: 2600, bright: true },
   { text: '',                                                   t: 2750 },
   { text: ' Press any key or wait…',                           t: 2900, blink: true },
 ]
 
+function ProgressBar({ onDone }) {
+  const [blocks, setBlocks] = useState(0)
+
+  useEffect(() => {
+    const step = BAR_MS / TOTAL_BLOCKS
+    const id = setInterval(() => {
+      setBlocks((b) => {
+        const next = b + 1
+        if (next >= TOTAL_BLOCKS) {
+          clearInterval(id)
+          onDone?.()
+          return TOTAL_BLOCKS
+        }
+        return next
+      })
+    }, step)
+    return () => clearInterval(id)
+  }, [onDone])
+
+  const pct = Math.round((blocks / TOTAL_BLOCKS) * 100)
+  return (
+    <span className="text-[#00ff41]">
+      {' ['}
+      <span className="text-[#00ff41]">{'█'.repeat(blocks)}</span>
+      <span className="text-[#00ff41] opacity-20">{'░'.repeat(TOTAL_BLOCKS - blocks)}</span>
+      {']  '}{String(pct).padStart(3, ' ')}%
+    </span>
+  )
+}
+
 export default function BootSequence({ onComplete }) {
   const [visible, setVisible] = useState([])
   const [ready, setReady] = useState(false)
   const { unlock, playTick, playProgress, playReady, once } = useBootSound()
+
+  const handleBarDone = useCallback(() => {
+    once('progress', playProgress)
+  }, [once, playProgress])
 
   useEffect(() => {
     const timers = LINES.map((line, i) =>
@@ -33,9 +70,9 @@ export default function BootSequence({ onComplete }) {
           setReady(true)
         } else if (line.bright) {
           once('ready', playReady)
-        } else if (line.text.includes('█')) {
-          once('progress', playProgress)
-        } else if (line.text.trim()) {
+        } else if (line.progress) {
+          once('progress-start', playProgress)
+        } else if (line.text?.trim()) {
           playTick()
         }
       }, line.t)
@@ -75,11 +112,17 @@ export default function BootSequence({ onComplete }) {
 
         {/* Boot lines */}
         <div className="space-y-[2px] text-sm font-mono overflow-hidden">
-          {visible.map((line, i) => (
-            <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${cls(line)}`}>
-              {line.text || ' '}
-            </div>
-          ))}
+          {visible.map((line, i) =>
+            line.progress ? (
+              <div key={i} className="leading-relaxed">
+                <ProgressBar onDone={handleBarDone} />
+              </div>
+            ) : (
+              <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${cls(line)}`}>
+                {line.text || ' '}
+              </div>
+            )
+          )}
         </div>
 
         {ready && <div className="mt-3 text-[#00ff41] text-sm cursor" />}

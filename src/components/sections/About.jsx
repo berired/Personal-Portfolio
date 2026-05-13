@@ -1,4 +1,5 @@
 import TypeWriter from '../ui/TypeWriter'
+import { useBootSound } from '../../hooks/useBootSound'
 
 const SKILLS = [
   { cat: 'Frontend',  items: ['React', 'JavaScript', 'HTML / CSS', 'Three.js', 'GSAP', 'Next.js'] },
@@ -17,8 +18,10 @@ const INFO = [
 ]
 
 export default function About() {
+  const { playTypeKey } = useBootSound()
+
   return (
-    <div className="p-6 max-w-4xl space-y-6">
+    <div className="space-y-6 py-6">
       {/* Header */}
       <div>
         <p className="text-xs text-[#ffb000] opacity-60 mb-1">// about.md loaded</p>
@@ -36,6 +39,7 @@ export default function About() {
         <TypeWriter
           className="text-sm text-[#00ff41] opacity-85 leading-relaxed"
           text={"I'm a Bachelor of Science in Computer Science student with a strong interest in web development, machine learning, and python automation. I enjoy working on the logic behind applications—building systems that are efficient, scalable, and meaningful.\n\nOutside of technical work, I enjoy taking on leadership roles in school and student organizations, collaborating with others, and helping projects move forward as a team.\n\nI'm also deeply curious by nature and genuinely enjoy learning new technologies and tech stacks."}
+          sound={playTypeKey}
         />
       </div>
 

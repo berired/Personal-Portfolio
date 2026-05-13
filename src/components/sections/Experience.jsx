@@ -49,7 +49,7 @@ function Entry({ job, index }) {
 
 export default function Experience() {
   return (
-    <div className="p-6 max-w-3xl space-y-6">
+    <div className="space-y-6 py-6">
       <div>
         <p className="text-xs text-[#ffb000] opacity-60 mb-1">// experience.log loaded</p>
         <h2 className="font-vt text-4xl text-[#00ff41] glow tracking-widest">EXPERIENCE</h2>

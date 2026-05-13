@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function TypeWriter({ text, speed = 18, className = '' }) {
+export default function TypeWriter({ text, speed = 18, className = '', sound }) {
   const [out, setOut] = useState('')
   const [done, setDone] = useState(false)
 
@@ -10,11 +10,13 @@ export default function TypeWriter({ text, speed = 18, className = '' }) {
     let i = 0
     const id = setInterval(() => {
       i++
+      const char = text[i - 1]
       setOut(text.slice(0, i))
+      if (sound && char && char !== ' ' && char !== '\n') sound()
       if (i >= text.length) { setDone(true); clearInterval(id) }
     }, speed)
     return () => clearInterval(id)
-  }, [text, speed])
+  }, [text, speed, sound])
 
   const parts = out.split('\n')
 

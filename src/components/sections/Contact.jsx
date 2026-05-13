@@ -31,7 +31,7 @@ export default function Contact() {
     ].join(' ')
 
   return (
-    <div className="p-6 max-w-xl space-y-6">
+    <div className="space-y-6 py-6 max-w-xl">
       <div>
         <p className="text-xs text-[#ffb000] opacity-60 mb-1">// contact.sys loaded</p>
         <h2 className="font-vt text-4xl text-[#00ff41] glow tracking-widest">CONTACT</h2>

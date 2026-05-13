@@ -49,7 +49,9 @@ export default function Portfolio() {
 
       {/* ── Scrollable content ── */}
       <div key={active} className="flex-1 overflow-y-auto overflow-x-hidden animate-fade-in">
-        <Section />
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2">
+          <Section />
+        </div>
       </div>
 
       {/* ── Status bar ── */}

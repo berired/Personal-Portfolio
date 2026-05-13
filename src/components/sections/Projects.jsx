@@ -146,7 +146,7 @@ export default function Projects() {
   const list = tab === 'personal' ? PERSONAL : tab === 'school' ? SCHOOL : FREELANCE
 
   return (
-    <div className="p-6 max-w-4xl space-y-5">
+    <div className="space-y-5 py-6">
       <div>
         <p className="text-xs text-[#ffb000] opacity-60 mb-1">// projects.sys loaded</p>
         <h2 className="font-vt text-4xl text-[#00ff41] glow tracking-widest">PROJECTS</h2>
