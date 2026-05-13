@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green: #00ff41;
+  --green-dim: #00cc33;
+  --amber: #ffb000;
+  --bg: #050505;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ─── CRT Scanlines ─────────────────────────────────── */
+.crt::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* ─── CRT Vignette ──────────────────────────────────── */
+.crt::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+  pointer-events: none;
+  z-index: 201;
+}
+
+/* ─── Moving scanline beam ──────────────────────────── */
+@keyframes beam {
+  0%   { top: -6px; }
+  100% { top: 100vh; }
+}
+.scanbeam {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(transparent, rgba(0, 255, 65, 0.04), transparent);
+  animation: beam 9s linear infinite;
+  pointer-events: none;
+  z-index: 202;
+}
+
+/* ─── Glow utilities ────────────────────────────────── */
+@layer utilities {
+  .glow {
+    text-shadow:
+      0 0 6px var(--green),
+      0 0 14px var(--green),
+      0 0 28px var(--green);
+  }
+  .glow-sm {
+    text-shadow:
+      0 0 4px var(--green),
+      0 0 10px rgba(0, 255, 65, 0.35);
+  }
+  .glow-amber {
+    text-shadow:
+      0 0 6px var(--amber),
+      0 0 14px rgba(255, 176, 0, 0.4);
+  }
+}
+
+/* ─── Terminal cursor ───────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.cursor::after {
+  content: '▋';
+  animation: blink 1s step-end infinite;
+  color: var(--green);
+}
+
+/* ─── Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #1a4d1a; }
+::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+
+/* ─── Selection ─────────────────────────────────────── */
+::selection {
+  background: rgba(0, 255, 65, 0.25);
+  color: var(--green);
+}
