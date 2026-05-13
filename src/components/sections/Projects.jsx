@@ -7,14 +7,7 @@ const PERSONAL = [
     desc: '3D terminal-themed portfolio built with Three.js, React, and GSAP. Features a cinematic camera animation that zooms into a retro CRT monitor.',
     stack: ['React', 'Three.js', 'GSAP', 'Tailwind CSS'],
     year: '2026',
-    link: '',
-  },
-  {
-    title: 'CatModoro',
-    desc: 'A Pomodoro timer app with cat theme. Features customizable timer, calendar & to-dos, heatmap, customizable themes, and Spotify integration.',
-    stack: ['React', 'JavaScript', 'CSS', 'Firebase'],
-    year: '2024',
-    link: 'https://catmodoro.vercel.app/',
+    link: 'https://github.com/berired/Personal-Portfolio',
   },
   {
     title: 'Pomodoro Application',
@@ -22,6 +15,13 @@ const PERSONAL = [
     stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Supabase'],
     year: '2025',
     link: 'https://github.com/berired/Pomodoro-Application',
+  },
+  {
+    title: 'CatModoro',
+    desc: 'A Pomodoro timer app with cat theme. Features customizable timer, calendar & to-dos, heatmap, customizable themes, and Spotify integration.',
+    stack: ['React', 'JavaScript', 'CSS', 'Firebase'],
+    year: '2024',
+    link: 'https://catmodoro.vercel.app/',
   },
   {
     title: 'Discord Calendar Bot',
@@ -37,6 +37,13 @@ const PERSONAL = [
     year: '2025',
     link: 'https://github.com/berired',
   },
+  {
+    title: 'Pulse',
+    desc: 'Pulse is a full-stack web application designed specifically for nursing students and clinical educators.',
+    stack: ['React', 'Node.js', 'Express', 'Supabase'],
+    year: '2026',
+    link: 'https://github.com/berired/Pulse'
+  }
 ]
 
 const SCHOOL = [
@@ -45,7 +52,7 @@ const SCHOOL = [
     desc: 'Web Design Scripting Finals project.',
     stack: ['HTML', 'CSS', 'JavaScript'],
     year: '2023',
-    link: '#',
+    link: 'https://github.com/berired/Web-Des-Scripting-Finals-David-s-Dream-Car-Garage',
   },
   {
     title: 'Product Catalog',
@@ -75,6 +82,34 @@ const SCHOOL = [
     year: '2025',
     link: 'https://tahananngmgakwento.vercel.app/',
   },
+  {
+    title: 'Operating Systems - Finals Project',
+    desc: 'A parking space car detector using Python and OpenCV. Is made in fulfill the requirements for the Operating Systems course.',
+    stack: ['Python', 'OpenCV'],
+    year: '2026',
+    link: 'https://github.com/berired/Operating-Systems---Finals-Car-Parking-Detection',
+  },
+  {
+    title: 'CIIT Marketplace',
+    desc: 'A marketplace website for the CIIT community. It is made in fulfill the requirements for the Software Engineering 2 course.',
+    stack: ['React', 'Node.js', 'Express', 'Firebase'],
+    year: '2026',
+    link: 'https://github.com/berired/CIIT-Marketplace'
+  },
+  {
+    title: 'Atelier',
+    desc: 'A e-commerce website. It is made in fulfillment of the requirements for Dynamic Web Programming Finals.',
+    stack: ['PHP','Blade', 'SQLite'],
+    year: '2026',
+    link: 'https://github.com/berired/Atelier'
+  },
+  {
+    title: 'Web Programming Finals Project',
+    desc: 'This project is a full-stack web application developed as a finals requirement for Web Programming. It focuses on loan approval prediction using Philippine loan data.',
+    stack: ['JavaScript', 'CSS', 'React', 'Python'],
+    year: '2026',
+    link: 'https://github.com/berired/Web-Programming-Finals'
+  }
 ]
 
 const FREELANCE = [
