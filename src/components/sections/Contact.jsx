@@ -10,23 +10,14 @@ const INITIAL = { name: '', email: '', message: '' }
 const STATUS  = { idle: 'idle', sending: 'sending', ok: 'ok', err: 'err' }
 
 async function sendMail({ name, email, message }) {
-  const res = await fetch('https://send.api.mailtrap.io/api/send', {
+  const res = await fetch('/api/send-email', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${import.meta.env.VITE_MAILTRAP_TOKEN}`,
-    },
-    body: JSON.stringify({
-      from:    { email: 'portfolio@demomailtrap.co', name: 'Portfolio Contact' },
-      to:      [{ email: 'davidxanderwagan@gmail.com' }],
-      subject: `[Portfolio] Message from ${name}`,
-      text:    `Name: ${name}\nEmail: ${email}\n\n${message}`,
-      html:    `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><hr/><p>${message.replace(/\n/g, '<br/>')}</p>`,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, message }),
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
-    throw new Error(body?.message ?? `HTTP ${res.status}`)
+    throw new Error(body?.error ?? `HTTP ${res.status}`)
   }
 }
 
