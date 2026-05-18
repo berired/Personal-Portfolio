@@ -5,3 +5,5 @@ dist/
 *.local
 .claude/
 keyframes/
+.vercel
+.env*.local
