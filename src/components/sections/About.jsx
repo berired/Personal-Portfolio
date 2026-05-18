@@ -39,7 +39,10 @@ export default function About() {
         <TypeWriter
           className="text-sm text-[#00ff41] opacity-85 leading-relaxed"
           text={"I'm a Bachelor of Science in Computer Science student with a strong interest in web development, machine learning, and python automation. I enjoy working on the logic behind applications—building systems that are efficient, scalable, and meaningful.\n\nOutside of technical work, I enjoy taking on leadership roles in school and student organizations, collaborating with others, and helping projects move forward as a team.\n\nI'm also deeply curious by nature and genuinely enjoy learning new technologies and tech stacks."}
+          speed={11}
           sound={playTypeKey}
+          once
+          id="whoami"
         />
       </div>
 
