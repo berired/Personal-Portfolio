@@ -4,9 +4,13 @@ import BootSequence from './components/ui/BootSequence'
 import Scene from './components/3d/Scene'
 import Portfolio from './components/Portfolio'
 
+const prefersReducedMotion =
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
 // phase flow: 'splash' → 'boot' → 'scene' → 'portfolio'
+// skipped entirely in favor of 'portfolio' when the user prefers reduced motion
 export default function App() {
-  const [phase, setPhase] = useState('splash')
+  const [phase, setPhase] = useState(prefersReducedMotion ? 'portfolio' : 'splash')
   const [flickering, setFlickering] = useState(false)
 
   const handleSplashStart = useCallback(() => setPhase('boot'), [])

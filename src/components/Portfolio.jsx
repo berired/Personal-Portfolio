@@ -29,10 +29,10 @@ export default function Portfolio() {
           <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
           <span className="w-3 h-3 rounded-full bg-[#28c840]" />
         </div>
-        <span className="text-xs opacity-50 glow-sm tracking-widest">
+        <span className="text-xs opacity-65 glow-sm tracking-widest">
           PORTFOLIO.SYS — [running]
         </span>
-        <span className="text-xs opacity-30">v1.0</span>
+        <span className="text-xs opacity-45">v1.0</span>
       </div>
 
       {/* ── Navigation tabs ── */}
@@ -55,7 +55,7 @@ export default function Portfolio() {
       </div>
 
       {/* ── Status bar ── */}
-      <div className="flex items-center justify-between px-4 py-1 bg-[#0a0a0a] border-t border-[#00ff4118] text-xs opacity-30 shrink-0">
+      <div className="flex items-center justify-between px-4 py-1 bg-[#0a0a0a] border-t border-[#00ff4118] text-xs opacity-55 shrink-0">
         <span>TERMINAL MODE</span>
         <span className="animate-pulse">●</span>
         <Clock />

@@ -21,7 +21,7 @@ export default function Navbar({ active, onNav }) {
             'border-r border-[#00ff4118]',
             active === tab.id
               ? 'text-[#00ff41] bg-[#0d1a0d] glow-sm'
-              : 'text-[#00ff41] opacity-35 hover:opacity-65 hover:bg-[#0d0d0d]',
+              : 'text-[#00ff41] opacity-60 hover:opacity-85 hover:bg-[#0d0d0d]',
           ].join(' ')}
         >
           {tab.cmd}

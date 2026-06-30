@@ -80,24 +80,28 @@ export default function BootSequence({ onComplete }) {
     return () => timers.forEach(clearTimeout)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Skip is available the whole time the boot sequence is on screen, not just once 'ready'.
+  useEffect(() => {
+    const onSkip = () => { unlock(); onComplete?.() }
+    window.addEventListener('keydown', onSkip)
+    window.addEventListener('click', onSkip)
+    return () => {
+      window.removeEventListener('keydown', onSkip)
+      window.removeEventListener('click', onSkip)
+    }
+  }, [onComplete, unlock])
+
   useEffect(() => {
     if (!ready) return
     const auto = setTimeout(() => onComplete?.(), 1800)
-    const onKey = () => { unlock(); onComplete?.() }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('click', onKey)
-    return () => {
-      clearTimeout(auto)
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('click', onKey)
-    }
-  }, [ready, onComplete, unlock])
+    return () => clearTimeout(auto)
+  }, [ready, onComplete])
 
   const cls = (l) => {
     if (l.bright) return 'text-white glow font-vt text-2xl tracking-widest'
     if (l.amber)  return 'text-[#ffb000] glow-amber'
     if (l.blink)  return 'text-[#00ff41] animate-pulse'
-    if (l.dim)    return 'text-[#00ff41] opacity-30'
+    if (l.dim)    return 'text-[#00ff41] opacity-55'
     return 'text-[#00ff41]'
   }
 
@@ -127,6 +131,12 @@ export default function BootSequence({ onComplete }) {
 
         {ready && <div className="mt-3 text-[#00ff41] text-sm cursor" />}
       </div>
+
+      {!ready && (
+        <p className="absolute bottom-4 right-4 text-[#00ff41] text-xs opacity-60 tracking-wide">
+          [ press any key to skip ]
+        </p>
+      )}
     </div>
   )
 }

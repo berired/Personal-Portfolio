@@ -108,3 +108,16 @@ body,
   background: rgba(0, 255, 65, 0.25);
   color: var(--green);
 }
+
+/* ─── Reduced motion ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .scanbeam {
+    animation: none;
+    opacity: 0;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

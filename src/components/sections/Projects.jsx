@@ -148,7 +148,7 @@ function Card({ p }) {
       <div className="p-4 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-2 gap-2">
           <p className="text-[#00ff41] font-bold text-sm group-hover:glow-sm transition-all">{p.title}</p>
-          <span className="text-[#00cc33] text-xs opacity-45 shrink-0">{p.year}</span>
+          <span className="text-[#00cc33] text-xs opacity-65 shrink-0">{p.year}</span>
         </div>
         <p className="text-[#00cc33] text-xs leading-relaxed opacity-75 mb-3">{p.desc}</p>
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -196,7 +196,7 @@ export default function Projects() {
             key={t}
             onClick={() => setTab(t)}
             className={[
-              'px-4 py-1.5 text-xs border rounded transition-all duration-150',
+              'px-4 min-h-[44px] text-xs border rounded transition-all duration-150',
               tab === t
                 ? 'border-[#00ff41] text-[#00ff41] bg-[#001800] glow-sm'
                 : 'border-[#00ff4128] text-[#00ff41] opacity-35 hover:opacity-60',
