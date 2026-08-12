@@ -73,12 +73,14 @@ export default function Computer({ screenRef }) {
 
       {/* Monitor glow spilling onto the bezel, keyboard and desk. Must sit in
           front of the glass: everything on the front of the monitor faces +X,
-          so a light behind the screen plane leaves the whole bezel unlit. */}
+          so a light behind the screen plane leaves the whole bezel unlit.
+          Kept well below the spotlight so it reads as an accent near the
+          screen rather than washing the whole case green. */}
       <pointLight
         position={[screen.x + size.x * 0.3, screen.y, screen.z]}
-        intensity={2.6}
+        intensity={0.25}
         color="#00ff41"
-        distance={size.x * 2}
+        distance={size.x * 1.3}
         decay={2}
       />
     </group>

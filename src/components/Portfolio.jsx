@@ -41,6 +41,14 @@ const ReplayIcon = () => (
   </svg>
 )
 
+const BackIcon = () => (
+  <svg {...iconProps}>
+    <rect x="3" y="4" width="18" height="13" rx="1.5" />
+    <path d="M8 21h8" />
+    <path d="M12 17v4" />
+  </svg>
+)
+
 const controlCls =
   'inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 text-[#00ff41] ' +
   'opacity-60 hover:opacity-100 hover:bg-[#0d1a0d] transition-opacity duration-150 rounded-sm'
@@ -56,7 +64,7 @@ function Clock() {
 
 const SECTION = { about: About, experience: Experience, projects: Projects, contact: Contact }
 
-export default function Portfolio({ onReplay }) {
+export default function Portfolio({ onReplay, onBack }) {
   const [active, setActive] = useState('about')
   const [muted, toggleMuted] = useMuted()
   const Section = SECTION[active]
@@ -75,6 +83,15 @@ export default function Portfolio({ onReplay }) {
         </span>
         <div className="flex items-center gap-0.5">
           <span className="text-xs opacity-45 hidden sm:inline mr-1">v1.0</span>
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Back — explore the machine in 3D"
+            title="Back"
+            className={controlCls}
+          >
+            <BackIcon />
+          </button>
           <button
             type="button"
             onClick={toggleMuted}

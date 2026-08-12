@@ -1,7 +1,7 @@
 const LINKS = [
   { label: 'email',    val: 'davidxanderwagan@gmail.com',        href: 'mailto:davidxanderwagan@gmail.com' },
   { label: 'github',   val: 'github.com/berired',                href: 'https://github.com/berired' },
-  { label: 'linkedin', val: 'linkedin.com/in/davidxanderwagan',  href: 'https://www.linkedin.com/in/david-xander-wagan-b78624389/' },
+  { label: 'linkedin', val: 'linkedin.com/in/david-xander-wagan-b78624389',  href: 'https://www.linkedin.com/in/david-xander-wagan-b78624389/' },
 ]
 
 export default function Contact() {

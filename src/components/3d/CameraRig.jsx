@@ -4,19 +4,22 @@ import * as THREE from 'three'
 import { useBootSound } from '../../hooks/useBootSound'
 import { useComputerMetrics } from './useComputerMetrics'
 import { CAMERA_SECONDS, PLUNGE_AT } from '../../hooks/useIntroTimeline'
+import { getHomeView } from './homeView'
 
 // The camera opens wide on the whole desk, glides across the front of the
 // machine, and finishes square on the monitor. Keyframes are multiples of the
 // distance needed to frame the model at the current fov, so the shot composes
-// correctly whatever size the .glb is; the last one is anchored to the screen.
-function buildCurve(d, screen, clearance) {
+// correctly whatever size the .glb is; the last one is anchored to the screen
+// via getHomeView — the same point InteractiveRig free-looks from, so handing
+// off between the two never jumps.
+function buildCurve(d, home) {
   return new THREE.CatmullRomCurve3([
     new THREE.Vector3(0.97 * d, 0.42 * d, 0.465 * d), // wide establishing shot
     new THREE.Vector3(0.89 * d, 0.32 * d, -0.34 * d), // glide across the front
     new THREE.Vector3(0.465 * d, 0.22 * d, -0.106 * d), // closing, still off-axis
     // Square on the glass, and *outside* the mesh. The old rig ended inside the
     // bounding box, looking at backfaces through a clipped near plane.
-    new THREE.Vector3(screen.x + clearance, screen.y, screen.z),
+    home.position,
   ])
 }
 
@@ -33,14 +36,14 @@ export default function CameraRig({ timelineRef, onReady }) {
 
     // Distance at which the model's bounding sphere fills the frame.
     const fit = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))
-    const clearance = size.x * 0.2
-    const curve = buildCurve(fit, screen, clearance)
+    const home = getHomeView({ radius, size, screen }, camera.fov)
+    const curve = buildCurve(fit, home)
 
     // The look target travels too, ending *behind* the screen. The old rig aimed
     // at a fixed point 0.07 units from the camera's final position, so lookAt's
     // direction vector collapsed and the orientation snapped at the climax.
     const lookStart = new THREE.Vector3(size.x * -0.09, size.y * 0.53, size.z * 0.1)
-    const lookEnd = new THREE.Vector3(screen.x - size.x * 0.22, screen.y, screen.z)
+    const lookEnd = home.lookAt
     const lookAt = new THREE.Vector3()
 
     const progress = { t: 0 }

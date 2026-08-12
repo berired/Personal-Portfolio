@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
 import SplashScreen from './components/ui/SplashScreen'
 import BootSequence from './components/ui/BootSequence'
 import Portfolio from './components/Portfolio'
@@ -53,6 +53,11 @@ export default function App() {
   // Latched: once the canvas is up it stays mounted through the portfolio as the
   // frozen backdrop, even after the intro timeline is torn down.
   const [scene3d, setScene3d] = useState(false)
+  // True only for the return zoom's flight time — hides the orbit controls
+  // and the click-to-return hint so the animation can't be re-triggered or
+  // fought mid-flight.
+  const [exiting, setExiting] = useState(false)
+  const sceneRef = useRef(null)
 
   const runningIntro = !short && (phase === 'boot' || phase === 'scene')
 
@@ -78,6 +83,30 @@ export default function App() {
     setPhase('boot')
     setBootExiting(false)
   }, [])
+
+  // Drops the visitor into free-look on the machine. Works even on the short
+  // path, where the intro (and its 3D chunk) never ran — this is what mounts
+  // the canvas in that case. gsap is preloaded here rather than waited on at
+  // exit time, so the return zoom can start the instant it's clicked.
+  const enterInteractive = useCallback(() => {
+    loadGsap()
+    setScene3d(true)
+    setFrozen(false)
+    setPhase('interactive')
+  }, [])
+
+  // Mirrors the intro in reverse: a smooth zoom back onto the docking shot —
+  // same bloom blowout the intro climaxes with — then the wash covers the
+  // swap and the canvas settles into the frozen portfolio backdrop.
+  const exitInteractive = useCallback(() => {
+    if (exiting) return
+    setExiting(true)
+    sceneRef.current?.flyHome(() => {
+      setWashing(true)
+      setPhase('portfolio')
+      setExiting(false)
+    })
+  }, [exiting])
 
   const replay = useCallback(() => {
     try {
@@ -195,9 +224,32 @@ export default function App() {
           className="fixed inset-0 transition-opacity duration-700"
           style={{ opacity: phase === 'portfolio' ? 0.08 : 1 }}
         >
-          <Suspense fallback={null}>
-            <Scene timelineRef={timeline} onSceneReady={markSceneReady} frozen={frozen} />
+          <Suspense
+            fallback={
+              phase === 'interactive' ? (
+                <div className="fixed inset-0 flex items-center justify-center text-[#00ff41] text-xs tracking-widest opacity-60">
+                  LOADING MODEL…
+                </div>
+              ) : null
+            }
+          >
+            <Scene
+              ref={sceneRef}
+              timelineRef={timeline}
+              onSceneReady={markSceneReady}
+              frozen={frozen}
+              interactive={phase === 'interactive' && !exiting}
+              onExit={exitInteractive}
+            />
           </Suspense>
+        </div>
+      )}
+
+      {phase === 'interactive' && !exiting && (
+        <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none flex justify-center p-3 sm:p-4">
+          <div className="text-center text-[10px] sm:text-xs tracking-widest text-[#00ff41] opacity-50">
+            DRAG TO LOOK AROUND · SCROLL TO ZOOM · CLICK THE MACHINE TO RETURN
+          </div>
         </div>
       )}
 
@@ -209,7 +261,7 @@ export default function App() {
 
       {phase === 'portfolio' && (
         <div className="relative z-10 animate-fade-in w-full h-full">
-          <Portfolio onReplay={replay} />
+          <Portfolio onReplay={replay} onBack={enterInteractive} />
         </div>
       )}
     </div>

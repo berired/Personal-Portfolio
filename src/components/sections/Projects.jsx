@@ -14,7 +14,7 @@ const PERSONAL = [
     desc: 'A Pomodoro timer application to boost productivity using timed work and break intervals.',
     stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Supabase'],
     year: '2025',
-    link: 'https://github.com/berired/Pomodoro-Application',
+    link: 'https://studyterm.vercel.app/',
   },
   {
     title: 'CatModoro',
@@ -80,7 +80,7 @@ const SCHOOL = [
     desc: "A children's book repository website for Panitikan Finals Project.",
     stack: ['React', 'JavaScript', 'CSS'],
     year: '2025',
-    link: 'https://tahananngmgakwento.vercel.app/',
+    link: 'https://github.com/berired/panitikan_finals',
   },
   {
     title: 'Operating Systems - Finals Project',
