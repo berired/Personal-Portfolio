@@ -130,55 +130,36 @@ const FREELANCE = [
 ]
 // ───────────────────────────────────────────────────────────────────
 
-function Card({ p }) {
-  return (
-    <div className="border border-[#00ff4120] rounded bg-[#080808] group hover:border-[#00ff4140] hover:bg-[#0a0f0a] transition-all duration-200 overflow-hidden flex flex-col">
-      {/* Thumbnail */}
-      {p.img && (
-        <div className="w-full h-36 overflow-hidden border-b border-[#00ff4115]">
-          <img
-            src={p.img}
-            alt={p.title}
-            onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
-            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-200"
-          />
-        </div>
-      )}
+const CATEGORIES = [
+  { key: 'personal', items: PERSONAL },
+  { key: 'school', items: SCHOOL },
+  { key: 'freelance', items: FREELANCE },
+]
 
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-2 gap-2">
-          <p className="text-[#00ff41] font-bold text-sm group-hover:glow-sm transition-all">{p.title}</p>
-          <span className="text-[#00cc33] text-xs opacity-65 shrink-0">{p.year}</span>
-        </div>
-        <p className="text-[#00cc33] text-xs leading-relaxed opacity-75 mb-3">{p.desc}</p>
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {p.stack.map((t) => (
-            <span
-              key={t}
-              className="text-xs px-2 py-0.5 bg-[#001800] border border-[#00ff4122] text-[#00ff41] opacity-70 rounded"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-        {p.link && p.link !== '#' && (
-          <a
-            href={p.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[#6699ff] opacity-55 hover:opacity-90 hover:underline transition-opacity mt-auto"
-          >
-            {'>'} view →
-          </a>
-        )}
-      </div>
-    </div>
-  )
+function slug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '')
+}
+
+function extFor(stack) {
+  const s = stack.join(' ').toLowerCase()
+  if (s.includes('typescript')) return 'tsx'
+  if (s.includes('react') || s.includes('next')) return 'jsx'
+  if (s.includes('python')) return 'py'
+  if (s.includes('php')) return 'php'
+  if (s.includes('node') || s.includes('express')) return 'js'
+  if (s.includes('javascript')) return 'js'
+  if (s.includes('html')) return 'html'
+  return 'txt'
 }
 
 export default function Projects() {
-  const [tab, setTab] = useState('personal')
-  const list = tab === 'personal' ? PERSONAL : tab === 'school' ? SCHOOL : FREELANCE
+  const [openFolders, setOpenFolders] = useState({ personal: true, school: false, freelance: false })
+  const [selected, setSelected] = useState({ cat: 'personal', index: 0 })
+
+  const toggleFolder = (key) => setOpenFolders((o) => ({ ...o, [key]: !o[key] }))
+
+  const selectedCat = CATEGORIES.find((c) => c.key === selected.cat)
+  const selectedProject = selectedCat ? selectedCat.items[selected.index] : null
 
   return (
     <div className="space-y-5 py-6">
@@ -187,37 +168,121 @@ export default function Projects() {
         <h2 className="font-vt text-4xl text-[#00ff41] glow tracking-widest">PROJECTS</h2>
       </div>
 
-      <p className="text-[#ffb000] text-xs opacity-60">{'>'} ls projects/ --all</p>
+      <p className="text-[#ffb000] text-xs opacity-60">{'>'} tree projects/ -L 2</p>
 
-      {/* Category tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {['personal', 'school', 'freelance'].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={[
-              'px-4 min-h-[44px] text-xs border rounded transition-all duration-150',
-              tab === t
-                ? 'border-[#00ff41] text-[#00ff41] bg-[#001800] glow-sm'
-                : 'border-[#00ff4128] text-[#00ff41] opacity-35 hover:opacity-60',
-            ].join(' ')}
-          >
-            [{t}_projects]
-          </button>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
+        {/* File tree */}
+        <div className="border border-[#00ff4120] rounded bg-[#080808] overflow-hidden flex flex-col">
+          <div className="px-3 py-2 border-b border-[#00ff4115] text-xs text-[#ffb000] opacity-70 shrink-0">
+            projects/
+          </div>
+          <div className="p-2 max-h-[360px] lg:max-h-[560px] overflow-y-auto">
+            {CATEGORIES.map((cat) => (
+              <div key={cat.key} className="mb-0.5">
+                <button
+                  type="button"
+                  onClick={() => toggleFolder(cat.key)}
+                  aria-expanded={openFolders[cat.key]}
+                  className="w-full flex items-center gap-1.5 px-2 min-h-[36px] text-xs text-[#00ff41] hover:bg-[#001800] rounded transition-colors"
+                >
+                  <span className="opacity-50 w-3 shrink-0">{openFolders[cat.key] ? '▾' : '▸'}</span>
+                  <span className="opacity-90">{cat.key}/</span>
+                  <span className="ml-auto opacity-30">{cat.items.length}</span>
+                </button>
+
+                {openFolders[cat.key] && (
+                  cat.items.length === 0 ? (
+                    <p className="ml-6 pl-2 py-1 text-xs text-[#00ff41] opacity-25 border-l border-[#00ff4115]">
+                      // empty
+                    </p>
+                  ) : (
+                    <div className="ml-3 border-l border-[#00ff4115] pl-1">
+                      {cat.items.map((p, i) => {
+                        const isSelected = selected.cat === cat.key && selected.index === i
+                        return (
+                          <button
+                            key={p.title}
+                            type="button"
+                            onClick={() => setSelected({ cat: cat.key, index: i })}
+                            aria-current={isSelected}
+                            className={[
+                              'w-full flex items-center gap-1.5 pl-2 pr-2 min-h-[34px] text-xs rounded transition-colors text-left',
+                              isSelected
+                                ? 'bg-[#001800] text-[#00ff41] border-l-2 border-[#00ff41] -ml-[1px] pl-[7px] glow-sm'
+                                : 'text-[#00cc33] opacity-70 hover:opacity-100 hover:bg-[#0a0f0a]',
+                            ].join(' ')}
+                          >
+                            <span className="opacity-50 shrink-0">▸</span>
+                            <span className="truncate">{slug(p.title)}.{extFor(p.stack)}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Preview pane */}
+        <div className="border border-[#00ff4120] rounded bg-[#080808] overflow-hidden flex flex-col min-h-[320px]">
+          {selectedProject ? (
+            <>
+              {/* Tab bar */}
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-[#00ff4115] bg-[#0a0f0a] shrink-0">
+                <span className="text-xs text-[#00ff41] opacity-90 glow-sm">
+                  {slug(selectedProject.title)}.{extFor(selectedProject.stack)}
+                </span>
+                <span className="text-xs text-[#00ff41] opacity-30 ml-auto shrink-0">{selectedProject.year}</span>
+              </div>
+
+              {selectedProject.img && (
+                <div className="w-full h-40 sm:h-48 overflow-hidden border-b border-[#00ff4115] shrink-0">
+                  <img
+                    src={selectedProject.img}
+                    alt={selectedProject.title}
+                    onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
+                    className="w-full h-full object-cover opacity-70"
+                  />
+                </div>
+              )}
+
+              <div className="p-4 flex flex-col flex-1">
+                <p className="text-[#00ff41] font-bold text-base mb-2 glow-sm">{selectedProject.title}</p>
+                <p className="text-[#00cc33] text-sm leading-relaxed opacity-80 mb-4">{selectedProject.desc}</p>
+
+                <p className="text-[#ffb000] text-xs mb-2 opacity-60">{'>'} cat stack.json</p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {selectedProject.stack.map((t) => (
+                    <span
+                      key={t}
+                      className="text-xs px-2 py-0.5 bg-[#001800] border border-[#00ff4122] text-[#00ff41] opacity-70 rounded"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                {selectedProject.link && selectedProject.link !== '#' && (
+                  <a
+                    href={selectedProject.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block text-xs text-[#6699ff] opacity-70 hover:opacity-100 hover:underline transition-opacity mt-auto"
+                  >
+                    {'>'} open {selectedProject.link.replace(/^https?:\/\//, '')} →
+                  </a>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <p className="text-[#00ff41] opacity-30 text-sm">// select a file to preview</p>
+            </div>
+          )}
+        </div>
       </div>
-
-      {list.length === 0 ? (
-        <div className="border border-[#00ff4118] rounded bg-[#080808] p-8 text-center">
-          <p className="text-[#00ff41] opacity-30 text-sm">// No {tab} projects yet</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {list.map((p, i) => (
-            <Card key={i} p={p} />
-          ))}
-        </div>
-      )}
     </div>
   )
 }
