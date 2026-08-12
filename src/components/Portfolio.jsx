@@ -62,7 +62,7 @@ export default function Portfolio({ onReplay }) {
   const Section = SECTION[active]
 
   return (
-    <div className="fixed inset-0 flex flex-col text-[#00ff41] font-mono">
+    <div className="fixed inset-0 flex flex-col text-[#00ff41] font-mono bg-[#050505]">
       {/* ── Title bar ── */}
       <div className="flex items-center justify-between pl-4 pr-1 bg-[#0a0a0a] border-b border-[#00ff4118] shrink-0">
         <div className="flex items-center gap-1.5">
