@@ -1,4 +1,6 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
+
+const MUTE_KEY = 'portfolio-muted'
 
 function getCtx() {
   if (typeof window === 'undefined') return null
@@ -8,11 +10,55 @@ function getCtx() {
   return window.__bootAudioCtx
 }
 
+export function readMuted() {
+  try {
+    return localStorage.getItem(MUTE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+// Every generator connects here instead of straight to the destination, so a
+// single gain stage silences all eight of them rather than each one needing to
+// check a flag.
+let masterGain = null
+function getOut(ctx) {
+  if (!masterGain || masterGain.context !== ctx) {
+    masterGain = ctx.createGain()
+    masterGain.gain.value = readMuted() ? 0 : 1
+    masterGain.connect(ctx.destination)
+  }
+  return masterGain
+}
+
+const muteListeners = new Set()
+
+export function setMuted(muted) {
+  try {
+    localStorage.setItem(MUTE_KEY, muted ? '1' : '0')
+  } catch {
+    /* ignore — the toggle still works for this session */
+  }
+  if (masterGain) masterGain.gain.value = muted ? 0 : 1
+  muteListeners.forEach((fn) => fn(muted))
+}
+
+/** Subscribe a component to the shared mute state. */
+export function useMuted() {
+  const [muted, setLocal] = useState(readMuted)
+  useEffect(() => {
+    muteListeners.add(setLocal)
+    return () => muteListeners.delete(setLocal)
+  }, [])
+  const toggle = useCallback(() => setMuted(!readMuted()), [])
+  return [muted, toggle]
+}
+
 function beep(ctx, freq, duration, gain = 0.18, type = 'square', startTime = 0) {
   const osc = ctx.createOscillator()
   const env = ctx.createGain()
   osc.connect(env)
-  env.connect(ctx.destination)
+  env.connect(getOut(ctx))
   osc.type = type
   osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime)
   env.gain.setValueAtTime(0, ctx.currentTime + startTime)
@@ -36,7 +82,7 @@ function noise(ctx, duration, gain = 0.04, startTime = 0) {
   const env = ctx.createGain()
   src.connect(filter)
   filter.connect(env)
-  env.connect(ctx.destination)
+  env.connect(getOut(ctx))
   env.gain.setValueAtTime(gain, ctx.currentTime + startTime)
   env.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration)
   src.start(ctx.currentTime + startTime)
@@ -74,7 +120,7 @@ export function useBootSound() {
     const osc = ctx.createOscillator()
     const env = ctx.createGain()
     osc.connect(env)
-    env.connect(ctx.destination)
+    env.connect(getOut(ctx))
     osc.type = 'sawtooth'
     osc.frequency.setValueAtTime(220, ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.55)
@@ -96,11 +142,12 @@ export function useBootSound() {
     beep(ctx, 1046.5, 0.4, 0.1, 'triangle', 0.52)
   }, [])
 
-  // Camera arc whoosh — airy sweep matching the 3.6s orbit
-  const playWhoosh = useCallback(() => {
+  // Camera arc whoosh — airy sweep. Duration is passed in by the rig so the
+  // sound always matches the length of the move it scores.
+  const playWhoosh = useCallback((seconds = 1.8) => {
     const ctx = getCtx()
     if (!ctx) return
-    const duration = 3.4
+    const duration = seconds
 
     // Noise layer: bandpass sweeping from 2400 Hz → 300 Hz
     const bufSize = ctx.sampleRate * duration
@@ -124,7 +171,7 @@ export function useBootSound() {
 
     src.connect(filter)
     filter.connect(env)
-    env.connect(ctx.destination)
+    env.connect(getOut(ctx))
     src.start(ctx.currentTime)
     src.stop(ctx.currentTime + duration + 0.05)
 
@@ -132,7 +179,7 @@ export function useBootSound() {
     const rumble = ctx.createOscillator()
     const rEnv = ctx.createGain()
     rumble.connect(rEnv)
-    rEnv.connect(ctx.destination)
+    rEnv.connect(getOut(ctx))
     rumble.type = 'sine'
     rumble.frequency.setValueAtTime(80, ctx.currentTime)
     rumble.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + duration)
@@ -144,10 +191,10 @@ export function useBootSound() {
   }, [])
 
   // Final zoom-in plunge — reverse whoosh building to an impact
-  const playZoomIn = useCallback(() => {
+  const playZoomIn = useCallback((seconds = 0.9) => {
     const ctx = getCtx()
     if (!ctx) return
-    const duration = 1.5
+    const duration = seconds
 
     // Noise layer: bandpass sweeping from 200 Hz → 3500 Hz (reverse whoosh)
     const bufSize = ctx.sampleRate * duration
@@ -170,7 +217,7 @@ export function useBootSound() {
 
     src.connect(filter)
     filter.connect(env)
-    env.connect(ctx.destination)
+    env.connect(getOut(ctx))
     src.start(ctx.currentTime)
     src.stop(ctx.currentTime + duration + 0.05)
 
@@ -178,7 +225,7 @@ export function useBootSound() {
     const osc = ctx.createOscillator()
     const oEnv = ctx.createGain()
     osc.connect(oEnv)
-    oEnv.connect(ctx.destination)
+    oEnv.connect(getOut(ctx))
     osc.type = 'sawtooth'
     osc.frequency.setValueAtTime(55, ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + duration * 0.8)
@@ -192,7 +239,7 @@ export function useBootSound() {
     const thud = ctx.createOscillator()
     const tEnv = ctx.createGain()
     thud.connect(tEnv)
-    tEnv.connect(ctx.destination)
+    tEnv.connect(getOut(ctx))
     thud.type = 'sine'
     thud.frequency.setValueAtTime(120, ctx.currentTime + duration * 0.82)
     thud.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + duration)
@@ -224,7 +271,7 @@ export function useBootSound() {
 
     src.connect(hiPass)
     hiPass.connect(env)
-    env.connect(ctx.destination)
+    env.connect(getOut(ctx))
     src.start(ctx.currentTime)
     src.stop(ctx.currentTime + 0.03)
   }, [])

@@ -19,7 +19,7 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out forwards',
         'slide-up': 'slideUp 0.5s ease-out forwards',
-        'flicker': 'flicker 0.12s linear',
+        'screen-wash': 'screenWash 0.52s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -30,10 +30,16 @@ export default {
           from: { transform: 'translateY(16px)', opacity: '0' },
           to: { transform: 'translateY(0)', opacity: '1' },
         },
-        flicker: {
-          '0%, 100%': { opacity: '1' },
-          '33%': { opacity: '0.4' },
-          '66%': { opacity: '0.8' },
+        // Fires as the camera reaches the screen and resolves to fully clear.
+        // The old `flicker` ran 0.12s with no fill-mode while App held the
+        // element for 500ms, so it snapped back to a solid full-screen green
+        // and sat there for ~380ms.
+        // One flare that decays to clear — deliberately a single peak, not a
+        // strobe, to stay well under the WCAG three-flashes-per-second threshold.
+        screenWash: {
+          '0%': { opacity: '0' },
+          '10%': { opacity: '0.75' },
+          '100%': { opacity: '0' },
         },
       },
     },

@@ -10,9 +10,16 @@ export default function SplashScreen({ onStart }) {
       playPost()
       onStart?.()
     }
-    window.addEventListener('keydown', trigger, { once: true })
-    window.addEventListener('click', trigger, { once: true })
+    // Registered on a later task, not immediately. When this mounts from the
+    // [ replay ] button, the click that pressed it is still bubbling toward
+    // window — attaching synchronously would let that same click boot straight
+    // past the splash.
+    const id = setTimeout(() => {
+      window.addEventListener('keydown', trigger, { once: true })
+      window.addEventListener('click', trigger, { once: true })
+    }, 0)
     return () => {
+      clearTimeout(id)
       window.removeEventListener('keydown', trigger)
       window.removeEventListener('click', trigger)
     }
