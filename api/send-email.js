@@ -10,11 +10,17 @@
 // contact-form case, so no custom domain is needed. Once a domain is verified,
 // set CONTACT_FROM to an address on it.
 
+import { checkRateLimit } from './_lib/rateLimit.js'
+
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 const DEFAULT_FROM = 'Portfolio Contact <onboarding@resend.dev>'
 const DEFAULT_TO = 'davidxanderwagan@gmail.com'
 
 const LIMITS = { name: 100, email: 200, message: 5000 }
+
+// A real visitor sends the contact form once, maybe twice. 5 per hour per IP
+// stops scripted spam without getting in a genuine sender's way.
+const RATE_LIMIT = { windowMs: 60 * 60 * 1000, max: 5 }
 
 // Deliberately loose: real addresses vary far more than most patterns allow,
 // and the authoritative check is whether the reply lands. This only rejects
@@ -33,6 +39,12 @@ export default async function handler(req, res) {
   if (!process.env.RESEND_API_KEY) {
     console.error('RESEND_API_KEY is not set')
     return res.status(500).json({ error: 'Email is not configured' })
+  }
+
+  const rate = checkRateLimit(req, RATE_LIMIT)
+  if (!rate.ok) {
+    res.setHeader('Retry-After', String(rate.retryAfter))
+    return res.status(429).json({ error: 'Too many messages — try again later' })
   }
 
   const { name, email, message, botcheck } = req.body ?? {}

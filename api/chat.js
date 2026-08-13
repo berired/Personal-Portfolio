@@ -8,10 +8,17 @@
 // Note this route only exists on Vercel — plain `vite dev` does not run
 // functions, so use `vercel dev` to exercise the chatbot locally.
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+import { checkRateLimit } from './_lib/rateLimit.js'
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
 const LIMITS = { messages: 40, text: 2000 }
+
+// Gemini calls burn this project's API quota, so cap it tighter than the
+// contact form: 15 messages per 5 minutes is enough for a real conversation
+// with a site visitor but not for scripted abuse.
+const RATE_LIMIT = { windowMs: 5 * 60 * 1000, max: 15 }
 
 // RedBot only knows the portfolio — this is the entirety of what it's allowed
 // to talk about, spelled out so the model doesn't drift into general-purpose
@@ -71,6 +78,12 @@ export default async function handler(req, res) {
   if (!process.env.GEMINI_API_KEY) {
     console.error('GEMINI_API_KEY is not set')
     return res.status(500).json({ error: 'RedBot is not configured' })
+  }
+
+  const rate = checkRateLimit(req, RATE_LIMIT)
+  if (!rate.ok) {
+    res.setHeader('Retry-After', String(rate.retryAfter))
+    return res.status(429).json({ error: 'Too many messages — try again in a bit' })
   }
 
   const { messages } = req.body ?? {}
