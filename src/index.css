@@ -96,6 +96,9 @@ body,
   animation: blink 1s step-end infinite;
   color: var(--green);
 }
+.blink-slow {
+  animation: blink 2.6s ease-in-out infinite;
+}
 
 /* ─── Scrollbar ─────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 5px; }

@@ -142,112 +142,73 @@ export function useBootSound() {
     beep(ctx, 1046.5, 0.4, 0.1, 'triangle', 0.52)
   }, [])
 
-  // Camera arc whoosh — airy sweep. Duration is passed in by the rig so the
-  // sound always matches the length of the move it scores.
-  const playWhoosh = useCallback((seconds = 1.8) => {
+  // Power-up: a CRT/PC coming online — a brief low thunk, a degaussing buzz
+  // that sweeps and settles, and a hum that rises and holds — rather than a
+  // cinematic whoosh scoring the camera move. Duration is passed in by the
+  // rig so it always matches the length of the move it scores.
+  const playPowerUp = useCallback((seconds = 0.9) => {
     const ctx = getCtx()
     if (!ctx) return
     const duration = seconds
+    const t0 = ctx.currentTime
 
-    // Noise layer: bandpass sweeping from 2400 Hz → 300 Hz
-    const bufSize = ctx.sampleRate * duration
+    // Thunk — the relay-click moment of switching on.
+    const thunk = ctx.createOscillator()
+    const thunkEnv = ctx.createGain()
+    thunk.connect(thunkEnv)
+    thunkEnv.connect(getOut(ctx))
+    thunk.type = 'sine'
+    thunk.frequency.setValueAtTime(90, t0)
+    thunk.frequency.exponentialRampToValueAtTime(45, t0 + 0.09)
+    thunkEnv.gain.setValueAtTime(0.3, t0)
+    thunkEnv.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1)
+    thunk.start(t0)
+    thunk.stop(t0 + 0.12)
+
+    // Degauss buzz — filtered noise sweeping down and fading, the coil-whine
+    // beat of a CRT clearing itself on power-on.
+    const buzzDur = Math.min(duration * 0.7, 0.55)
+    const bufSize = Math.max(1, Math.floor(ctx.sampleRate * buzzDur))
     const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate)
     const data = buf.getChannelData(0)
     for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1
     const src = ctx.createBufferSource()
     src.buffer = buf
-
     const filter = ctx.createBiquadFilter()
     filter.type = 'bandpass'
-    filter.Q.value = 1.2
-    filter.frequency.setValueAtTime(2400, ctx.currentTime)
-    filter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + duration)
-
-    const env = ctx.createGain()
-    env.gain.setValueAtTime(0, ctx.currentTime)
-    env.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.3)
-    env.gain.setValueAtTime(0.18, ctx.currentTime + duration - 0.6)
-    env.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
-
+    filter.Q.value = 3
+    filter.frequency.setValueAtTime(220, t0 + 0.02)
+    filter.frequency.exponentialRampToValueAtTime(70, t0 + buzzDur)
+    const buzzEnv = ctx.createGain()
+    buzzEnv.gain.setValueAtTime(0, t0)
+    buzzEnv.gain.linearRampToValueAtTime(0.16, t0 + 0.06)
+    buzzEnv.gain.exponentialRampToValueAtTime(0.0001, t0 + buzzDur)
     src.connect(filter)
-    filter.connect(env)
-    env.connect(getOut(ctx))
-    src.start(ctx.currentTime)
-    src.stop(ctx.currentTime + duration + 0.05)
+    filter.connect(buzzEnv)
+    buzzEnv.connect(getOut(ctx))
+    src.start(t0 + 0.02)
+    src.stop(t0 + buzzDur + 0.05)
 
-    // Subtle pitch tail — low rumble of motion
-    const rumble = ctx.createOscillator()
-    const rEnv = ctx.createGain()
-    rumble.connect(rEnv)
-    rEnv.connect(getOut(ctx))
-    rumble.type = 'sine'
-    rumble.frequency.setValueAtTime(80, ctx.currentTime)
-    rumble.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + duration)
-    rEnv.gain.setValueAtTime(0, ctx.currentTime)
-    rEnv.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.5)
-    rEnv.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
-    rumble.start(ctx.currentTime)
-    rumble.stop(ctx.currentTime + duration + 0.05)
-  }, [])
-
-  // Final zoom-in plunge — reverse whoosh building to an impact
-  const playZoomIn = useCallback((seconds = 0.9) => {
-    const ctx = getCtx()
-    if (!ctx) return
-    const duration = seconds
-
-    // Noise layer: bandpass sweeping from 200 Hz → 3500 Hz (reverse whoosh)
-    const bufSize = ctx.sampleRate * duration
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate)
-    const data = buf.getChannelData(0)
-    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1
-    const src = ctx.createBufferSource()
-    src.buffer = buf
-
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'bandpass'
-    filter.Q.value = 0.9
-    filter.frequency.setValueAtTime(200, ctx.currentTime)
-    filter.frequency.exponentialRampToValueAtTime(3500, ctx.currentTime + duration * 0.85)
-
-    const env = ctx.createGain()
-    env.gain.setValueAtTime(0.05, ctx.currentTime)
-    env.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + duration * 0.85)
-    env.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
-
-    src.connect(filter)
-    filter.connect(env)
-    env.connect(getOut(ctx))
-    src.start(ctx.currentTime)
-    src.stop(ctx.currentTime + duration + 0.05)
-
-    // Rising tone for the "locking-on" sensation
-    const osc = ctx.createOscillator()
-    const oEnv = ctx.createGain()
-    osc.connect(oEnv)
-    oEnv.connect(getOut(ctx))
-    osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(55, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + duration * 0.8)
-    oEnv.gain.setValueAtTime(0.0, ctx.currentTime)
-    oEnv.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.1)
-    oEnv.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + duration + 0.05)
-
-    // Impact thud at the end
-    const thud = ctx.createOscillator()
-    const tEnv = ctx.createGain()
-    thud.connect(tEnv)
-    tEnv.connect(getOut(ctx))
-    thud.type = 'sine'
-    thud.frequency.setValueAtTime(120, ctx.currentTime + duration * 0.82)
-    thud.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + duration)
-    tEnv.gain.setValueAtTime(0, ctx.currentTime + duration * 0.82)
-    tEnv.gain.linearRampToValueAtTime(0.5, ctx.currentTime + duration * 0.84)
-    tEnv.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration + 0.1)
-    thud.start(ctx.currentTime + duration * 0.82)
-    thud.stop(ctx.currentTime + duration + 0.15)
+    // Power hum — rises in and holds through the rest of the move, the
+    // "systems now running" tone.
+    const hum = ctx.createOscillator()
+    const hum2 = ctx.createOscillator()
+    const humEnv = ctx.createGain()
+    hum.connect(humEnv)
+    hum2.connect(humEnv)
+    humEnv.connect(getOut(ctx))
+    hum.type = 'sine'
+    hum2.type = 'sine'
+    hum.frequency.value = 60
+    hum2.frequency.value = 120.5 // slightly detuned octave for an electrical beat
+    humEnv.gain.setValueAtTime(0, t0)
+    humEnv.gain.linearRampToValueAtTime(0.05, t0 + duration * 0.5)
+    humEnv.gain.setValueAtTime(0.05, t0 + duration - 0.15)
+    humEnv.gain.exponentialRampToValueAtTime(0.0001, t0 + duration)
+    hum.start(t0)
+    hum2.start(t0)
+    hum.stop(t0 + duration + 0.05)
+    hum2.stop(t0 + duration + 0.05)
   }, [])
 
   // Typewriter key click — soft mechanical tap per character
@@ -283,5 +244,203 @@ export function useBootSound() {
     fn()
   }, [])
 
-  return { unlock, playPost, playTick, playProgress, playReady, playWhoosh, playZoomIn, playTypeKey, once }
+  return { unlock, playPost, playTick, playProgress, playReady, playPowerUp, playTypeKey, once }
+}
+
+// Ambient office bed: a faint fan hum, a hushed room hiss, and sparse
+// distant-murmur bursts standing in for muffled conversation. One shared
+// instance rather than a hook — it needs to keep running across whatever
+// component tree is mounted for free-look, not tied to one component's
+// lifetime, and starting it twice would double every layer.
+let ambience = null
+
+export function startOfficeAmbience() {
+  const ctx = getCtx()
+  if (!ctx || ambience) return
+  ctx.resume()
+
+  const bed = ctx.createGain()
+  bed.gain.setValueAtTime(0, ctx.currentTime)
+  bed.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 1.2)
+  bed.connect(getOut(ctx))
+
+  // Fan hum — two detuned low tones with a slow tremolo, the whir of a PC
+  // or HVAC running somewhere in the room.
+  const fan1 = ctx.createOscillator()
+  fan1.type = 'triangle'
+  fan1.frequency.value = 84
+  const fan2 = ctx.createOscillator()
+  fan2.type = 'sine'
+  fan2.frequency.value = 121
+  const fanGain = ctx.createGain()
+  fanGain.gain.value = 0.5
+  const tremolo = ctx.createOscillator()
+  tremolo.frequency.value = 0.55
+  const tremoloGain = ctx.createGain()
+  tremoloGain.gain.value = 0.12
+  tremolo.connect(tremoloGain)
+  tremoloGain.connect(fanGain.gain)
+  fan1.connect(fanGain)
+  fan2.connect(fanGain)
+  fanGain.connect(bed)
+
+  // Room hiss — broadband noise, heavily low-passed so it reads as hushed
+  // air rather than static.
+  const hissBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate)
+  const hissData = hissBuf.getChannelData(0)
+  for (let i = 0; i < hissData.length; i++) hissData[i] = Math.random() * 2 - 1
+  const hiss = ctx.createBufferSource()
+  hiss.buffer = hissBuf
+  hiss.loop = true
+  const hissFilter = ctx.createBiquadFilter()
+  hissFilter.type = 'lowpass'
+  hissFilter.frequency.value = 850
+  const hissGain = ctx.createGain()
+  hissGain.gain.value = 0.22
+  hiss.connect(hissFilter)
+  hissFilter.connect(hissGain)
+  hissGain.connect(bed)
+
+  fan1.start()
+  fan2.start()
+  tremolo.start()
+  hiss.start()
+
+  // Distant murmur — sparse, randomly-timed bandpassed noise bursts in a
+  // vocal-formant range. Vague on purpose: an impression of people talking
+  // two cubicles over, never intelligible.
+  const murmurGain = ctx.createGain()
+  murmurGain.gain.value = 0.4
+  murmurGain.connect(bed)
+  let murmurTimer = null
+  const scheduleMurmur = () => {
+    const c = getCtx()
+    if (!c) return
+    const dur = 0.4 + Math.random() * 0.9
+    const size = Math.max(1, Math.floor(c.sampleRate * dur))
+    const buf = c.createBuffer(1, size, c.sampleRate)
+    const data = buf.getChannelData(0)
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1
+    const src = c.createBufferSource()
+    src.buffer = buf
+    const bp = c.createBiquadFilter()
+    bp.type = 'bandpass'
+    bp.frequency.value = 280 + Math.random() * 500
+    bp.Q.value = 1.4
+    const env = c.createGain()
+    env.gain.setValueAtTime(0, c.currentTime)
+    env.gain.linearRampToValueAtTime(0.06 + Math.random() * 0.05, c.currentTime + 0.12)
+    env.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur)
+    src.connect(bp)
+    bp.connect(env)
+    env.connect(murmurGain)
+    src.start()
+    src.stop(c.currentTime + dur + 0.05)
+    murmurTimer = setTimeout(scheduleMurmur, 1800 + Math.random() * 4200)
+  }
+  scheduleMurmur()
+
+  ambience = { bed, fan1, fan2, tremolo, hiss, getMurmurTimer: () => murmurTimer }
+}
+
+export function stopOfficeAmbience() {
+  if (!ambience) return
+  const { bed, fan1, fan2, tremolo, hiss } = ambience
+  const ctx = getCtx()
+  clearTimeout(ambience.getMurmurTimer())
+  if (ctx) {
+    const now = ctx.currentTime
+    bed.gain.cancelScheduledValues(now)
+    bed.gain.setValueAtTime(bed.gain.value, now)
+    bed.gain.linearRampToValueAtTime(0, now + 0.5)
+  }
+  setTimeout(() => {
+    try {
+      fan1.stop()
+      fan2.stop()
+      tremolo.stop()
+      hiss.stop()
+    } catch {
+      /* already stopped */
+    }
+  }, 600)
+  ambience = null
+}
+
+// CRT monitor hum for the desktop UI: an almost-subliminal 60Hz mains buzz
+// with the faintest trace of flyback-transformer whine riding on top.
+// Mixed well under the noise floor — background presence, not a texture
+// anyone should consciously notice.
+let crtHum = null
+
+export function startCrtHum() {
+  const ctx = getCtx()
+  if (!ctx || crtHum) return
+  ctx.resume()
+
+  const bed = ctx.createGain()
+  bed.gain.setValueAtTime(0, ctx.currentTime)
+  bed.gain.linearRampToValueAtTime(0.0005, ctx.currentTime + 1.5)
+  bed.connect(getOut(ctx))
+
+  // Mains hum — two detuned low tones, the classic 60Hz + octave beat of a
+  // transformer under load. Carries almost all of the level.
+  const hum1 = ctx.createOscillator()
+  hum1.type = 'sine'
+  hum1.frequency.value = 60
+  const hum2 = ctx.createOscillator()
+  hum2.type = 'sine'
+  hum2.frequency.value = 120.6
+  const humGain = ctx.createGain()
+  humGain.gain.value = 0.6
+  hum1.connect(humGain)
+  hum2.connect(humGain)
+  humGain.connect(bed)
+
+  // Flyback whine — a thin, high-pitched tone from the horizontal deflection
+  // coil, with a very slow wobble so it doesn't sit dead-still. Kept far
+  // quieter than the low buzz — a trace, not a second voice.
+  const whine = ctx.createOscillator()
+  whine.type = 'sine'
+  whine.frequency.value = 15734
+  const wobble = ctx.createOscillator()
+  wobble.frequency.value = 0.13
+  const wobbleGain = ctx.createGain()
+  wobbleGain.gain.value = 12
+  wobble.connect(wobbleGain)
+  wobbleGain.connect(whine.frequency)
+  const whineGain = ctx.createGain()
+  whineGain.gain.value = 0.08
+  whine.connect(whineGain)
+  whineGain.connect(bed)
+
+  hum1.start()
+  hum2.start()
+  whine.start()
+  wobble.start()
+
+  crtHum = { bed, hum1, hum2, whine, wobble }
+}
+
+export function stopCrtHum() {
+  if (!crtHum) return
+  const { bed, hum1, hum2, whine, wobble } = crtHum
+  const ctx = getCtx()
+  if (ctx) {
+    const now = ctx.currentTime
+    bed.gain.cancelScheduledValues(now)
+    bed.gain.setValueAtTime(bed.gain.value, now)
+    bed.gain.linearRampToValueAtTime(0, now + 0.4)
+  }
+  setTimeout(() => {
+    try {
+      hum1.stop()
+      hum2.stop()
+      whine.stop()
+      wobble.stop()
+    } catch {
+      /* already stopped */
+    }
+  }, 500)
+  crtHum = null
 }

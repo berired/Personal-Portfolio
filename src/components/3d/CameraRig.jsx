@@ -1,49 +1,41 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { useBootSound } from '../../hooks/useBootSound'
-import { useComputerMetrics } from './useComputerMetrics'
-import { CAMERA_SECONDS, PLUNGE_AT } from '../../hooks/useIntroTimeline'
-import { getHomeView } from './homeView'
+import { useOfficeMetrics } from './useOfficeMetrics'
+import { CAMERA_SECONDS } from '../../hooks/useIntroTimeline'
+import { getSeatView } from './homeView'
 
-// The camera opens wide on the whole desk, glides across the front of the
-// machine, and finishes square on the monitor. Keyframes are multiples of the
-// distance needed to frame the model at the current fov, so the shot composes
-// correctly whatever size the .glb is; the last one is anchored to the screen
-// via getHomeView — the same point InteractiveRig free-looks from, so handing
-// off between the two never jumps.
-function buildCurve(d, home) {
+// The camera opens wide on the cubicle, glides in past the desk, and settles
+// into the seated POV — the same point InteractiveRig free-looks from, so
+// handing off between the two never jumps. Keyframes are multiples of the
+// room's own radius, so the shot composes correctly whatever size the office
+// .glb is.
+function buildCurve(d, roomCenter, seat) {
   return new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.97 * d, 0.42 * d, 0.465 * d), // wide establishing shot
-    new THREE.Vector3(0.89 * d, 0.32 * d, -0.34 * d), // glide across the front
-    new THREE.Vector3(0.465 * d, 0.22 * d, -0.106 * d), // closing, still off-axis
-    // Square on the glass, and *outside* the mesh. The old rig ended inside the
-    // bounding box, looking at backfaces through a clipped near plane.
-    home.position,
+    new THREE.Vector3(roomCenter.x + 0.97 * d, roomCenter.y + 0.42 * d, roomCenter.z + 0.465 * d),
+    new THREE.Vector3(roomCenter.x + 0.6 * d, roomCenter.y + 0.28 * d, roomCenter.z - 0.2 * d),
+    new THREE.Vector3(roomCenter.x + 0.2 * d, roomCenter.y + 0.15 * d, roomCenter.z - 0.05 * d),
+    seat.position,
   ])
 }
 
 export default function CameraRig({ timelineRef, onReady }) {
   const { camera } = useThree()
-  const { radius, size, screen } = useComputerMetrics()
+  const { room, seat: seatMetrics } = useOfficeMetrics()
   const done = useRef(false)
-  const { playZoomIn } = useBootSound()
 
   useEffect(() => {
     const tl = timelineRef?.current
     if (!tl || done.current) return
     done.current = true
 
-    // Distance at which the model's bounding sphere fills the frame.
-    const fit = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))
-    const home = getHomeView({ radius, size, screen }, camera.fov)
-    const curve = buildCurve(fit, home)
+    // Distance at which the room's bounding sphere fills the frame.
+    const fit = room.radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))
+    const seat = getSeatView({ seat: seatMetrics })
+    const curve = buildCurve(fit, room.center, seat)
 
-    // The look target travels too, ending *behind* the screen. The old rig aimed
-    // at a fixed point 0.07 units from the camera's final position, so lookAt's
-    // direction vector collapsed and the orientation snapped at the climax.
-    const lookStart = new THREE.Vector3(size.x * -0.09, size.y * 0.53, size.z * 0.1)
-    const lookEnd = home.lookAt
+    const lookStart = new THREE.Vector3(room.center.x, room.center.y + room.size.y * 0.1, room.center.z)
+    const lookEnd = seat.lookAt
     const lookAt = new THREE.Vector3()
 
     const progress = { t: 0 }
@@ -57,10 +49,6 @@ export default function CameraRig({ timelineRef, onReady }) {
 
     onUpdate()
 
-    // One tween, not two. Chaining an `inOut` sweep into an `in` plunge parked
-    // the camera at zero velocity between them — a visible stall right where the
-    // move was supposed to build. A single accelerating ease holds the
-    // establishing shot, then commits, with no seam in the middle.
     tl.to(progress, {
       t: 1,
       duration: CAMERA_SECONDS,
@@ -68,17 +56,14 @@ export default function CameraRig({ timelineRef, onReady }) {
       onUpdate,
     }, 'camera')
 
-    // Audio still has two beats even though the motion is continuous.
-    tl.call(() => playZoomIn(CAMERA_SECONDS - PLUNGE_AT), null, `camera+=${PLUNGE_AT}`)
-
     if (import.meta.env.DEV) {
-      window.__intro = { tl, curve, camera, metrics: { radius, size, screen, fit } }
+      window.__intro = { tl, curve, camera, metrics: { room, seat, fit } }
     }
 
     // Releases the timeline's awaitScene hold — the model is loaded (this
     // component suspends on it) and the move is attached.
     onReady?.()
-  }, [camera, playZoomIn, radius, size, screen, timelineRef, onReady])
+  }, [camera, room, seatMetrics, timelineRef, onReady])
 
   return null
 }

@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react'
-import Navbar from './ui/Navbar'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Window from './desktop/Window'
+import DesktopIcon from './desktop/DesktopIcon'
+import Taskbar from './desktop/Taskbar'
+import RobotBot from './desktop/RobotBot'
+import RedBotChat from './desktop/RedBotChat'
+import { PersonIcon, PaperIcon, ComputerIcon, MailIcon, CopyrightIcon, RobotIcon } from './desktop/icons'
 import About from './sections/About'
 import Experience from './sections/Experience'
 import Projects from './sections/Projects'
 import Contact from './sections/Contact'
-import { useMuted } from '../hooks/useBootSound'
+import Credits from './sections/Credits'
+import { useMuted, startCrtHum, stopCrtHum } from '../hooks/useBootSound'
 
 const iconProps = {
   width: 16,
@@ -49,96 +55,278 @@ const BackIcon = () => (
   </svg>
 )
 
-const controlCls =
-  'inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-2 text-[#00ff41] ' +
-  'opacity-60 hover:opacity-100 hover:bg-[#0d1a0d] transition-opacity duration-150 rounded-sm'
+const trayBtnCls =
+  'inline-flex items-center justify-center min-h-[36px] min-w-[36px] px-1.5 text-[#00ff41] ' +
+  'opacity-70 hover:opacity-100 hover:bg-[#0d1a0d] transition-opacity duration-150 rounded-sm'
 
-function Clock() {
-  const [t, setT] = useState(new Date())
-  useEffect(() => {
-    const id = setInterval(() => setT(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return <span>{t.toLocaleTimeString()}</span>
+const APPS = [
+  { id: 'about', label: 'About', cmd: './about', Icon: PersonIcon, Component: About },
+  { id: 'experience', label: 'Experience', cmd: './experience', Icon: PaperIcon, Component: Experience },
+  { id: 'projects', label: 'Projects', cmd: './projects', Icon: ComputerIcon, Component: Projects },
+  { id: 'contact', label: 'Contact', cmd: './contact', Icon: MailIcon, Component: Contact },
+  { id: 'credits', label: 'Credits', cmd: './credits', Icon: CopyrightIcon, Component: Credits },
+]
+
+const CLOSED_WINDOW = {
+  open: false,
+  minimized: false,
+  maximized: false,
+  active: false,
+  z: 0,
+  x: null,
+  y: null,
+  width: null,
+  height: null,
 }
 
-const SECTION = { about: About, experience: Experience, projects: Projects, contact: Contact }
+const initialWindows = {
+  ...Object.fromEntries(APPS.map((app) => [app.id, { ...CLOSED_WINDOW }])),
+  // RedBot has no desktop icon — it's opened from the RobotBot widget in the
+  // taskbar corner instead — but it's still a window managed the same way.
+  redbot: { ...CLOSED_WINDOW },
+}
 
 export default function Portfolio({ onReplay, onBack }) {
-  const [active, setActive] = useState('about')
+  const [windows, setWindows] = useState(initialWindows)
+  const [topZ, setTopZ] = useState(1)
   const [muted, toggleMuted] = useMuted()
-  const Section = SECTION[active]
+
+  useEffect(() => {
+    startCrtHum()
+    return stopCrtHum
+  }, [])
+
+  const focus = useCallback((id, nextZ) => {
+    setWindows((prev) => {
+      const next = {}
+      for (const key of Object.keys(prev)) {
+        next[key] = { ...prev[key], active: key === id }
+      }
+      next[id] = { ...next[id], z: nextZ }
+      return next
+    })
+  }, [])
+
+  const openApp = useCallback(
+    (id) => {
+      const nextZ = topZ + 1
+      setTopZ(nextZ)
+      setWindows((prev) => {
+        const w = prev[id]
+        let { x, y, width, height } = w
+        // First open: pick a default size and a position cascaded off the
+        // app's index, so a batch of first-opens don't stack exactly on
+        // top of one another. Later opens keep wherever it was last left.
+        if (x == null) {
+          const vw = window.innerWidth
+          const vh = window.innerHeight
+          width = Math.min(880, vw * 0.92)
+          height = Math.min(640, vh * 0.72)
+          const cascade = APPS.findIndex((a) => a.id === id)
+          x = (vw - width) / 2 + cascade * 28
+          y = vh * 0.09 + cascade * 28
+        }
+        return {
+          ...prev,
+          [id]: { ...w, open: true, minimized: false, z: nextZ, x, y, width, height },
+        }
+      })
+      focus(id, nextZ)
+    },
+    [topZ, focus]
+  )
+
+  const moveWindow = useCallback((id, x, y) => {
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], x, y } }))
+  }, [])
+
+  const resizeWindow = useCallback((id, width, height) => {
+    setWindows((prev) => ({ ...prev, [id]: { ...prev[id], width, height } }))
+  }, [])
+
+  const closeApp = useCallback((id) => {
+    setWindows((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], open: false, minimized: false, maximized: false, active: false },
+    }))
+  }, [])
+
+  const minimizeApp = useCallback((id) => {
+    setWindows((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], minimized: true, active: false },
+    }))
+  }, [])
+
+  const toggleMaximize = useCallback((id) => {
+    setWindows((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], maximized: !prev[id].maximized },
+    }))
+  }, [])
+
+  const focusApp = useCallback(
+    (id) => {
+      const nextZ = topZ + 1
+      setTopZ(nextZ)
+      focus(id, nextZ)
+    },
+    [topZ, focus]
+  )
+
+  const openRedBot = useCallback(() => {
+    const nextZ = topZ + 1
+    setTopZ(nextZ)
+    setWindows((prev) => {
+      const w = prev.redbot
+      let { x, y, width, height } = w
+      if (x == null) {
+        const vw = window.innerWidth
+        const vh = window.innerHeight
+        width = Math.min(380, vw * 0.92)
+        height = Math.min(560, vh * 0.78)
+        // Anchored near the RobotBot widget it was opened from, clear of
+        // both the taskbar and the widget itself.
+        x = vw - width - 16
+        y = Math.max(16, vh - height - 88)
+      }
+      return {
+        ...prev,
+        redbot: { ...w, open: true, minimized: false, z: nextZ, x, y, width, height },
+      }
+    })
+    focus('redbot', nextZ)
+  }, [topZ, focus])
+
+  const toggleRedBot = useCallback(() => {
+    const w = windows.redbot
+    if (!w.open || w.minimized) return openRedBot()
+    return focusApp('redbot')
+  }, [windows, openRedBot, focusApp])
+
+  const handleTaskbarToggle = useCallback(
+    (id) => {
+      const w = windows[id]
+      if (!w.open) return openApp(id)
+      if (w.minimized) return openApp(id)
+      if (w.active) return minimizeApp(id)
+      return focusApp(id)
+    },
+    [windows, openApp, minimizeApp, focusApp]
+  )
+
+  const taskbarApps = useMemo(
+    () => APPS.map(({ id, label, Icon }) => ({ id, label, Icon })),
+    []
+  )
 
   return (
     <div className="fixed inset-0 flex flex-col text-[#00ff41] font-mono bg-[#050505]">
-      {/* ── Title bar ── */}
-      <div className="flex items-center justify-between pl-4 pr-1 bg-[#0a0a0a] border-b border-[#00ff4118] shrink-0">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-          <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-          <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+      {/* ── Desktop surface ── */}
+      <div className="relative flex-1 min-h-0 overflow-hidden">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-1 p-3 sm:p-5 w-fit max-w-full">
+          {APPS.map((app) => (
+            <DesktopIcon key={app.id} icon={app.Icon} label={app.label} onOpen={() => openApp(app.id)} />
+          ))}
         </div>
-        <span className="text-xs opacity-65 glow-sm tracking-widest truncate min-w-0 px-2">
-          PORTFOLIO.SYS — [running]
-        </span>
-        <div className="flex items-center gap-0.5">
-          <span className="text-xs opacity-45 hidden sm:inline mr-1">v1.0</span>
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label="Back — explore the machine in 3D"
-            title="Back"
-            className={controlCls}
-          >
-            <BackIcon />
-          </button>
-          <button
-            type="button"
-            onClick={toggleMuted}
-            aria-pressed={muted}
-            aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
-            title={muted ? 'Sound off' : 'Sound on'}
-            className={controlCls}
-          >
-            {muted ? <SpeakerOff /> : <SpeakerOn />}
-          </button>
-          <button
-            type="button"
-            onClick={onReplay}
-            aria-label="Replay the intro sequence"
-            title="Replay intro"
-            className={controlCls}
-          >
-            <ReplayIcon />
-          </button>
-        </div>
+
+        {APPS.map((app) => {
+          const w = windows[app.id]
+          const Section = app.Component
+          return (
+            <Window
+              key={app.id}
+              id={app.id}
+              title={app.label}
+              cmd={app.cmd}
+              icon={app.Icon}
+              open={w.open}
+              minimized={w.minimized}
+              maximized={w.maximized}
+              active={w.active}
+              zIndex={w.z}
+              x={w.x}
+              y={w.y}
+              width={w.width}
+              height={w.height}
+              onClose={() => closeApp(app.id)}
+              onMinimize={() => minimizeApp(app.id)}
+              onToggleMaximize={() => toggleMaximize(app.id)}
+              onFocus={() => !w.active && focusApp(app.id)}
+              onMove={(x, y) => moveWindow(app.id, x, y)}
+              onResize={(width, height) => resizeWindow(app.id, width, height)}
+            >
+              <Section />
+            </Window>
+          )
+        })}
+
+        <Window
+          id="redbot"
+          title="RedBot"
+          cmd="./redbot"
+          icon={RobotIcon}
+          open={windows.redbot.open}
+          minimized={windows.redbot.minimized}
+          maximized={windows.redbot.maximized}
+          active={windows.redbot.active}
+          zIndex={windows.redbot.z}
+          x={windows.redbot.x}
+          y={windows.redbot.y}
+          width={windows.redbot.width}
+          height={windows.redbot.height}
+          onClose={() => closeApp('redbot')}
+          onMinimize={() => minimizeApp('redbot')}
+          onToggleMaximize={() => toggleMaximize('redbot')}
+          onFocus={() => !windows.redbot.active && focusApp('redbot')}
+          onMove={(x, y) => moveWindow('redbot', x, y)}
+          onResize={(width, height) => resizeWindow('redbot', width, height)}
+        >
+          <RedBotChat />
+        </Window>
       </div>
 
-      {/* ── Navigation tabs ── */}
-      <Navbar active={active} onNav={(id) => setActive(id)} />
+      {/* ── Taskbar ── */}
+      <Taskbar
+        apps={taskbarApps}
+        windows={windows}
+        onToggleApp={handleTaskbarToggle}
+        trayControls={
+          <>
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back — explore the machine in 3D"
+              title="Back"
+              className={trayBtnCls}
+            >
+              <BackIcon />
+            </button>
+            <button
+              type="button"
+              onClick={toggleMuted}
+              aria-pressed={muted}
+              aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
+              title={muted ? 'Sound off' : 'Sound on'}
+              className={trayBtnCls}
+            >
+              {muted ? <SpeakerOff /> : <SpeakerOn />}
+            </button>
+            <button
+              type="button"
+              onClick={onReplay}
+              aria-label="Replay the intro sequence"
+              title="Replay intro"
+              className={trayBtnCls}
+            >
+              <ReplayIcon />
+            </button>
+          </>
+        }
+      />
 
-      {/* ── Prompt line ── */}
-      <div className="px-4 sm:px-6 py-2 bg-[#070707] border-b border-[#00ff4110] text-xs opacity-50 shrink-0 overflow-hidden whitespace-nowrap">
-        <span className="text-[#ffb000]">user@portfolio</span>
-        <span className="text-white">:</span>
-        <span className="text-[#6699ff]">~/{active}</span>
-        <span className="text-white">$ </span>
-        <span className="hidden sm:inline">cat README.md</span>
-      </div>
-
-      {/* ── Scrollable content ── */}
-      <div key={active} className="flex-1 overflow-y-auto overflow-x-hidden animate-fade-in">
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2">
-          <Section />
-        </div>
-      </div>
-
-      {/* ── Status bar ── */}
-      <div className="flex items-center justify-between px-4 py-1 bg-[#0a0a0a] border-t border-[#00ff4118] text-xs opacity-55 shrink-0">
-        <span>TERMINAL MODE</span>
-        <span className="animate-pulse">●</span>
-        <Clock />
-      </div>
+      {/* ── RedBot widget — perched over the taskbar clock, bottom-right ── */}
+      <RobotBot onOpen={toggleRedBot} chatOpen={windows.redbot.open && !windows.redbot.minimized} />
     </div>
   )
 }

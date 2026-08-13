@@ -1,106 +1,35 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { Stars } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { Suspense, forwardRef, useImperativeHandle, useRef } from 'react'
 import { EffectComposer, Bloom, ChromaticAberration, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
-import Computer from './Computer'
+import Office from './Office'
 import CameraRig from './CameraRig'
 import InteractiveRig from './InteractiveRig'
-import { CAMERA_SECONDS, loadGsap } from '../../hooks/useIntroTimeline'
+import { useOfficeMetrics } from './useOfficeMetrics'
+import { getMonitorDockView } from './homeView'
+import { loadGsap } from '../../hooks/useIntroTimeline'
+import { useBootSound } from '../../hooks/useBootSound'
 
-// How long the return-to-portfolio zoom takes to dock on the screen — a
-// quick hop back from wherever free-look left the camera, not the full
-// establishing shot the intro opens with.
-const RETURN_SECONDS = 0.9
-const RETURN_SETTLE_SECONDS = 0.4
+// How long the click-to-enter zoom takes — a quick push into the screen from
+// wherever free-look left the camera, not the full establishing shot the
+// intro opens with.
+const ENTER_SECONDS = 0.9
 
-// Threshold sits at 1.0 so only the screen — which is deliberately driven above
-// 1.0 — can bloom. Lower values also caught the point-lit bezel, tower and
-// keyboard, and the glow flattened the CRT vignette into a green wash.
-const BLOOM_THRESHOLD = 1.0
-const BLOOM_BASE = 0.35
-const BLOOM_PEAK = 2.2
-// Screen brightness multiplier. The blowout is what carries the camera into the
-// portfolio, so it has to clear the threshold by a wide margin at the end.
-const SCREEN_BASE = 1.3
-const SCREEN_PEAK = 12
-// How far the screen shifts from green toward white as it blows out. Scaling
-// only the blue channel turned it cyan on the way up.
-const WHITE_SHIFT = 0.8
+// A constant, subtle strength — no monitor light or color to ramp anymore,
+// just softens bright edges (the window graphic, the sticky notes) the way a
+// cheap lens would.
+const BLOOM_INTENSITY = 0.2
 
-// CRT lens artifacts, applied once at a constant, subtle strength — not tied
-// to the bloom ramp above, so the whole scene doesn't flash in sync with the
-// screen's idle-glow peaks. No global color grade here: the case should read
-// its own material color, not a green wash — only the screen and its point
-// light are actually green.
+// CRT lens artifacts, applied once at a constant, subtle strength. No global
+// color grade here: the office reads its own material colors under normal
+// daylight, not a green wash.
 const CRT_ABERRATION_OFFSET = 0.0006
 const CRT_NOISE_OPACITY = 0.04
 
-// Pushes the timeline-driven ramp onto the effect and the material each frame.
-// Doing it here rather than through React state keeps a 60fps ramp from
-// re-rendering the tree.
-function Driver({ state, bloomRef, screenRef }) {
-  useFrame(() => {
-    const r = state.current.ramp
-    if (bloomRef.current) {
-      bloomRef.current.intensity = BLOOM_BASE + r * (BLOOM_PEAK - BLOOM_BASE)
-    }
-    if (screenRef.current) {
-      const k = SCREEN_BASE + r * (SCREEN_PEAK - SCREEN_BASE)
-      const w = r * WHITE_SHIFT // green → white, not green → cyan
-      screenRef.current.color.setRGB(k * w, k, k * (0.05 + w * 0.95))
-    }
-  })
-  return null
-}
-
-// Clicking the machine itself is the exit, mirroring how it's the entry
-// point for the intro. A plain onClick would also fire after an orbit drag
-// that happens to end back over the model, so down/up positions are compared
-// and only a near-stationary press counts as a click.
-const CLICK_DRAG_TOLERANCE = 6
-
-function ClickToExit({ active, onExit, children }) {
-  const { gl } = useThree()
-  const down = useRef(null)
-
-  if (!active) return children
-
-  const handleDown = (e) => {
-    down.current = { x: e.clientX, y: e.clientY }
-  }
-  const handleUp = (e) => {
-    const start = down.current
-    down.current = null
-    if (!start) return
-    const dist = Math.hypot(e.clientX - start.x, e.clientY - start.y)
-    if (dist < CLICK_DRAG_TOLERANCE) onExit?.()
-  }
-  const handleOver = () => {
-    gl.domElement.style.cursor = 'pointer'
-  }
-  const handleOut = () => {
-    gl.domElement.style.cursor = 'auto'
-  }
-
-  return (
-    <group
-      onPointerDown={handleDown}
-      onPointerUp={handleUp}
-      onPointerOver={handleOver}
-      onPointerOut={handleOut}
-    >
-      {children}
-    </group>
-  )
-}
-
-function Stage({ timelineRef, onSceneReady, screenRef, interactive, rigApiRef, onExit }) {
+function Stage({ timelineRef, onSceneReady, interactive, rigApiRef, onMonitorClick }) {
   return (
     <>
-      <ClickToExit active={interactive} onExit={onExit}>
-        <Computer screenRef={screenRef} />
-      </ClickToExit>
+      <Office onMonitorClick={interactive ? onMonitorClick : undefined} />
       <CameraRig timelineRef={timelineRef} onReady={onSceneReady} />
       <InteractiveRig active={interactive} apiRef={rigApiRef} />
     </>
@@ -108,111 +37,50 @@ function Stage({ timelineRef, onSceneReady, screenRef, interactive, rigApiRef, o
 }
 
 const Scene = forwardRef(function Scene(
-  { timelineRef, onSceneReady, frozen = false, interactive = false, onExit },
+  { timelineRef, onSceneReady, frozen = false, interactive = false, onEnterPortfolio },
   ref
 ) {
-  const bloomRef = useRef()
-  const screenRef = useRef()
-  const state = useRef({ ramp: 0 })
   const rigApiRef = useRef(null)
+  const metrics = useOfficeMetrics()
+  const { playPowerUp } = useBootSound()
 
-  // Mirrors the intro's own up/down bloom keyframes (see the timeline effect
-  // below): the ramp climbs to a white blowout as the camera docks — this is
-  // what makes the return read as a zoom *into* the screen rather than a
-  // camera move with a flash cut at the end — then settles back to the idle
-  // glow afterward, hidden behind the wash overlay, so the frozen backdrop
-  // doesn't get stuck on the blown-out peak.
+  // Clicking the monitor zooms the camera into the screen, then the wash
+  // (App's CSS overlay) covers the swap to the flat portfolio page. The
+  // power-up sound (thunk, degauss buzz, rising hum) scores this push in
+  // rather than the intro's opening glide.
   useImperativeHandle(ref, () => ({
-    flyHome: (onDocked) => {
+    enterPortfolio: (onDocked) => {
       loadGsap().then(({ default: gsap }) => {
-        rigApiRef.current?.flyHome?.(gsap, RETURN_SECONDS)
-        gsap.to(state.current, {
-          ramp: 1,
-          duration: RETURN_SECONDS,
-          ease: 'power4.in',
-          onComplete: () => {
-            onDocked?.()
-            gsap.to(state.current, { ramp: 0, duration: RETURN_SETTLE_SECONDS, ease: 'power2.out' })
-          },
-        })
+        const dockPosition = getMonitorDockView(metrics)
+        rigApiRef.current?.flyToMonitor?.(gsap, ENTER_SECONDS, dockPosition)
+        playPowerUp(ENTER_SECONDS)
+        gsap.delayedCall(ENTER_SECONDS, () => onDocked?.())
       })
     },
   }))
 
-  // The bloom ramp is a keyframe on the same timeline as the camera, not a
-  // separate animation — the screen overtaking the frame *is* the transition,
-  // rather than a flash pasted over the top of it.
-  useEffect(() => {
-    const tl = timelineRef?.current
-    if (!tl) return
-
-    const up = tl.to(
-      state.current,
-      {
-        ramp: 1,
-        duration: CAMERA_SECONDS,
-        // Steeper than the camera's own ease so the screen stays a readable
-        // green for most of the move and only blows out at the very end.
-        ease: 'power4.in',
-      },
-      'camera'
-    )
-
-    // The white blowout is a one-frame climax, not a resting state. Without
-    // this, the ramp stays pinned at 1 forever, and App's frameloop="never"
-    // freeze (~1s after reveal) locks in that peak-white frame as the
-    // permanent backdrop behind the portfolio — a white screen that never
-    // goes back to looking like a monitor. Settle back to the idle glow
-    // before the freeze has a chance to catch it.
-    const down = tl.to(
-      state.current,
-      {
-        ramp: 0,
-        duration: 0.5,
-        ease: 'power2.out',
-      },
-      `camera+=${CAMERA_SECONDS}`
-    )
-
-    return () => {
-      up.kill()
-      down.kill()
-    }
-  }, [timelineRef])
-
   return (
     <Canvas
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-      camera={{ fov: 50, near: 0.1, far: 200 }}
+      camera={{ fov: 50, near: 0.05, far: 200 }}
       shadows
       dpr={[1, 1.5]}
       // Once the portfolio has taken over, the last frame stays on screen as a
       // static backdrop at zero ongoing cost.
       frameloop={frozen ? 'never' : 'always'}
     >
-      <color attach="background" args={['#020202']} />
-      {/* Scene lives inside ~8 units; the old 18–50 range never took effect.
-          This fades the 30×30 desk plane out into the dark. */}
-      <fog attach="fog" args={['#020202', 6, 22]} />
+      <color attach="background" args={['#cfd6de']} />
 
-      {/* Ambient fill — enough to read the case's true material color in the
-          shadowed side, not just the green point light spilling off the screen */}
-      <ambientLight intensity={0.28} color="#3a3a45" />
-
-      {/* Desk lamp from upper-right — the primary light, so the case reads its
-          own color instead of getting overpowered by the screen's point light */}
-      <spotLight
-        position={[4, 6, 4]}
-        angle={0.45}
-        penumbra={0.8}
-        intensity={1.6}
-        color="#ffe0b0"
+      {/* Bright daytime office. */}
+      <ambientLight intensity={0.9} color="#ffffff" />
+      <hemisphereLight args={['#e8edf4', '#9aa1ab', 0.6]} />
+      <directionalLight
+        position={[6, 10, 4]}
+        intensity={1.1}
+        color="#fff8ec"
         castShadow
         shadow-mapSize={[1024, 1024]}
       />
-
-      {/* Deep background stars */}
-      <Stars radius={60} depth={60} count={1200} factor={2} fade speed={0.4} />
 
       {/* Everything that depends on the loaded model lives here, so the camera
           can never animate over an empty room. */}
@@ -220,21 +88,17 @@ const Scene = forwardRef(function Scene(
         <Stage
           timelineRef={timelineRef}
           onSceneReady={onSceneReady}
-          screenRef={screenRef}
           interactive={interactive}
           rigApiRef={rigApiRef}
-          onExit={onExit}
+          onMonitorClick={onEnterPortfolio}
         />
       </Suspense>
 
-      <Driver state={state} bloomRef={bloomRef} screenRef={screenRef} />
-
       <EffectComposer multisampling={4} disableNormalPass>
         <Bloom
-          ref={bloomRef}
-          luminanceThreshold={BLOOM_THRESHOLD}
+          luminanceThreshold={1.0}
           luminanceSmoothing={0.25}
-          intensity={BLOOM_BASE}
+          intensity={BLOOM_INTENSITY}
           mipmapBlur
           radius={0.35}
         />

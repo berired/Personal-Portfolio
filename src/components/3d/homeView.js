@@ -1,29 +1,22 @@
 import * as THREE from 'three'
 
-// The "square on the glass" shot — the intro's docking position, deliberately
-// close enough that the emissive screen fills the frame for the bloom
-// blowout that carries the transition into the portfolio. Never seen at rest
-// (it's covered by the wash, then hidden behind the opaque portfolio UI), so
-// it is *not* a usable resting shot — see getOrbitView for that.
-export function getHomeView({ radius, size, screen }, fov) {
-  const fit = radius / Math.sin(THREE.MathUtils.degToRad(fov / 2))
-  const clearance = size.x * 0.2
-  return {
-    position: new THREE.Vector3(screen.x + clearance, screen.y, screen.z),
-    lookAt: new THREE.Vector3(screen.x - size.x * 0.22, screen.y, screen.z),
-  }
+// The resting free-look shot: sitting in the desk chair, looking at the CRT
+// monitor. Only the camera moves from here — InteractiveRig orbits around
+// this point, CameraRig's intro glide ends here.
+export function getSeatView({ seat }) {
+  return { position: seat.eye.clone(), lookAt: seat.look.clone() }
 }
 
-// A pulled-back three-quarter view of the whole machine — the resting shot
-// for free-look mode. Reuses the intro's own establishing-shot direction (its
-// very first curve keyframe) so the framing feels like part of the same
-// visual language, just not zoomed into the blowout.
-const ORBIT_DIR = new THREE.Vector3(0.97, 0.42, 0.465).normalize()
-
-export function getOrbitView({ radius, size }, fov) {
-  const fit = radius / Math.sin(THREE.MathUtils.degToRad(fov / 2))
-  return {
-    position: ORBIT_DIR.clone().multiplyScalar(fit * 1.05),
-    lookAt: new THREE.Vector3(size.x * -0.09, size.y * 0.53, size.z * 0.1),
-  }
+// Docking position for the click-to-enter transition: pushed in right up
+// against the screen glass, just outside the mesh, so the zoom reads as
+// pushing *into* the screen rather than a camera move that stops short.
+// `facing` points outward from the glass (toward the chair) — "in front of
+// the screen" is a step further out along that same direction. Position
+// only: the transition holds whatever direction the camera was already
+// facing rather than turning to square up on the screen, so there's no
+// orientation to compute here.
+export function getMonitorDockView({ monitor }) {
+  const front = new THREE.Vector3(monitor.center.x, monitor.center.y, monitor.frontZ)
+  const clearance = monitor.size.z * 0.12
+  return front.clone().addScaledVector(monitor.facing, clearance)
 }

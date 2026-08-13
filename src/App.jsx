@@ -4,6 +4,7 @@ import BootSequence from './components/ui/BootSequence'
 import Portfolio from './components/Portfolio'
 import { LINES, TOTAL_BLOCKS } from './components/ui/bootLines'
 import { useIntroTimeline, loadGsap } from './hooks/useIntroTimeline'
+import { startOfficeAmbience, stopOfficeAmbience } from './hooks/useBootSound'
 
 // three + drei + gsap + postprocessing are the bulk of the bundle. Splitting
 // them out means the splash paints without waiting on them, and they download
@@ -66,10 +67,12 @@ export default function App() {
     setBootExiting(true)
   }, [])
 
+  // The boot glide hands off straight into free-look on the office — there's
+  // no automatic reveal of the flat portfolio anymore, so no wash: the
+  // camera just stops being scripted and starts taking input.
   const handleReveal = useCallback(() => {
     markIntroSeen()
-    setWashing(true)
-    setPhase('portfolio')
+    setPhase('interactive')
   }, [])
 
   const { boot, built, timeline, markSceneReady, skip } = useIntroTimeline({
@@ -95,13 +98,13 @@ export default function App() {
     setPhase('interactive')
   }, [])
 
-  // Mirrors the intro in reverse: a smooth zoom back onto the docking shot —
-  // same bloom blowout the intro climaxes with — then the wash covers the
+  // Clicking the monitor: a smooth zoom into the screen with the same bloom
+  // blowout the old intro used to climax with — then the wash covers the
   // swap and the canvas settles into the frozen portfolio backdrop.
-  const exitInteractive = useCallback(() => {
+  const enterPortfolio = useCallback(() => {
     if (exiting) return
     setExiting(true)
-    sceneRef.current?.flyHome(() => {
+    sceneRef.current?.enterPortfolio(() => {
       setWashing(true)
       setPhase('portfolio')
       setExiting(false)
@@ -172,6 +175,14 @@ export default function App() {
     if (!short && built && phase === 'boot') setScene3d(true)
   }, [short, built, phase])
 
+  // Faint office ambience (fan hum, room hiss, distant murmur) plays only
+  // while the visitor is actually free-looking at the desk — not during the
+  // scripted boot glide, and not once the flat portfolio has taken over.
+  useEffect(() => {
+    if (phase === 'interactive' && !exiting) startOfficeAmbience()
+    return stopOfficeAmbience
+  }, [phase, exiting])
+
   // Boot overlay crossfades out as the camera move begins.
   useEffect(() => {
     if (!bootExiting) return
@@ -239,7 +250,7 @@ export default function App() {
               onSceneReady={markSceneReady}
               frozen={frozen}
               interactive={phase === 'interactive' && !exiting}
-              onExit={exitInteractive}
+              onEnterPortfolio={enterPortfolio}
             />
           </Suspense>
         </div>
@@ -247,8 +258,8 @@ export default function App() {
 
       {phase === 'interactive' && !exiting && (
         <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none flex justify-center p-3 sm:p-4">
-          <div className="text-center text-[10px] sm:text-xs tracking-widest text-[#00ff41] opacity-50">
-            DRAG TO LOOK AROUND · SCROLL TO ZOOM · CLICK THE MACHINE TO RETURN
+          <div className="text-center text-[10px] sm:text-xs tracking-widest text-[#00ff41] bg-black/60 rounded px-3 py-1.5">
+            DRAG TO LOOK AROUND · SCROLL TO ZOOM · CLICK THE MONITOR TO ENTER
           </div>
         </div>
       )}

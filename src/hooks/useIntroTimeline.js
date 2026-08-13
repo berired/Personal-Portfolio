@@ -4,7 +4,6 @@ import { BOOT_MS, LINES, visibleCount, barBlocks } from '../components/ui/bootLi
 
 export const BOOT_SECONDS = BOOT_MS / 1000
 export const CAMERA_SECONDS = 2.7
-export const PLUNGE_AT = 1.8 // seconds into the camera leg
 export const SKIP_RATE = 8
 
 // gsap is only needed for the full intro, and the full intro always passes
