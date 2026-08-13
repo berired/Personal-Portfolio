@@ -1,7 +1,7 @@
-// Vercel serverless function: relays chat messages to the Gemini API.
+// Vercel serverless function: relays chat messages to the Groq API.
 //
-// GEMINI_API_KEY is a server-only env var (no VITE_ prefix, so Vite cannot
-// inline it into the bundle) — a Gemini key is billed to this project's free
+// GROQ_API_KEY is a server-only env var (no VITE_ prefix, so Vite cannot
+// inline it into the bundle) — a Groq key is billed to this project's free
 // quota, so it must never reach the browser. See api/send-email.js for the
 // same pattern used by the contact form.
 //
@@ -10,12 +10,12 @@
 
 import { checkRateLimit } from './_lib/rateLimit.js'
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
+const GROQ_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.6-27b'
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 
 const LIMITS = { messages: 40, text: 2000 }
 
-// Gemini calls burn this project's API quota, so cap it tighter than the
+// Groq calls burn this project's API quota, so cap it tighter than the
 // contact form: 15 messages per 5 minutes is enough for a real conversation
 // with a site visitor but not for scripted abuse.
 const RATE_LIMIT = { windowMs: 5 * 60 * 1000, max: 15 }
@@ -75,8 +75,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set')
+  if (!process.env.GROQ_API_KEY) {
+    console.error('GROQ_API_KEY is not set')
     return res.status(500).json({ error: 'RedBot is not configured' })
   }
 
@@ -103,38 +103,48 @@ export default async function handler(req, res) {
     }
   }
 
-  const contents = messages.map((m) => ({ role: m.role, parts: [{ text: m.text }] }))
+  // Groq uses OpenAI's chat-completions shape: 'assistant' instead of Gemini's
+  // 'model', and the system prompt is just another message instead of a
+  // separate field.
+  const chatMessages = [
+    { role: 'system', content: SYSTEM_INSTRUCTION },
+    ...messages.map((m) => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.text })),
+  ]
 
   let response
   try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${process.env.GEMINI_API_KEY}`, {
+    response = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
       body: JSON.stringify({
-        contents,
-        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-        generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+        model: GROQ_MODEL,
+        messages: chatMessages,
+        // qwen/qwen3.6-27b is a reasoning model — without this it burns the
+        // whole token budget on a hidden <think> block and returns nothing.
+        reasoning_effort: 'none',
+        temperature: 0.7,
+        max_tokens: 400,
       }),
     })
   } catch (err) {
-    console.error('Gemini request failed:', err)
+    console.error('Groq request failed:', err)
     return res.status(502).json({ error: 'Could not reach RedBot' })
   }
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    console.error(`Gemini responded ${response.status}: ${body}`)
+    console.error(`Groq responded ${response.status}: ${body}`)
     return res.status(502).json({ error: 'RedBot had trouble replying' })
   }
 
   const data = await response.json()
-  const reply = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? ''
+  const reply = data?.choices?.[0]?.message?.content ?? ''
 
   if (!reply) {
-    const blockReason = data?.promptFeedback?.blockReason
-    return res
-      .status(200)
-      .json({ reply: blockReason ? "I can't answer that one — try asking about David's work instead." : "Sorry, I didn't catch that. Could you rephrase?" })
+    return res.status(200).json({ reply: "Sorry, I didn't catch that. Could you rephrase?" })
   }
 
   return res.status(200).json({ reply })

@@ -69,8 +69,8 @@ export default function RedBotChat() {
     setPending(true)
 
     try {
-      // Gemini requires the conversation to open on a 'user' turn, so the
-      // greeting bubble (always first, always 'model') is dropped before send.
+      // The greeting bubble (always first, always 'model') is a client-only
+      // display message, so it's dropped before send.
       const history = next.slice(next.findIndex((m) => m.role === 'user'))
       const reply = await askRedBot(history)
       setMessages((m) => [...m, { role: 'model', text: reply }])
