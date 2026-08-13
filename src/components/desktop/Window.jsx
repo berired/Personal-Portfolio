@@ -101,7 +101,13 @@ export default function Window({
 
   if (!open) return null
 
-  const style = maximized ? { inset: 0, zIndex } : { top: y, left: x, width, height, zIndex }
+  // inset:0 would sit relative to the viewport (this is position:fixed) and
+  // paint straight over the taskbar, which has no z-index of its own to
+  // defend itself with — clip the bottom instead so maximized windows stop
+  // just above it.
+  const style = maximized
+    ? { top: 0, left: 0, right: 0, bottom: TASKBAR_H, zIndex }
+    : { top: y, left: x, width, height, zIndex }
 
   return (
     <div

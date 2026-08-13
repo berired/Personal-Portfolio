@@ -67,6 +67,13 @@ const TASKBAR_H = 56
 // covers bare desktop, never something the user is actually reading.
 const WINDOW_Z_BASE = 100
 
+// Below this, dragging/resizing a floating window is fiddly on a touchscreen
+// and cascaded default positions are prone to landing partly off-screen — so
+// every window opens maximized instead. Matches Tailwind's `sm` breakpoint,
+// which is also where the taskbar's own layout switches over.
+const MOBILE_BREAKPOINT = 640
+const isMobile = () => window.innerWidth < MOBILE_BREAKPOINT
+
 const trayBtnCls =
   'inline-flex items-center justify-center min-h-[36px] min-w-[36px] px-1.5 text-[#00ff41] ' +
   'opacity-70 hover:opacity-100 hover:bg-[#0d1a0d] transition-opacity duration-150 rounded-sm'
@@ -143,7 +150,17 @@ export default function Portfolio({ onReplay, onBack }) {
         }
         return {
           ...prev,
-          [id]: { ...w, open: true, minimized: false, z: nextZ, x, y, width, height },
+          [id]: {
+            ...w,
+            open: true,
+            minimized: false,
+            maximized: isMobile() ? true : w.maximized,
+            z: nextZ,
+            x,
+            y,
+            width,
+            height,
+          },
         }
       })
       focus(id, nextZ)
@@ -207,7 +224,17 @@ export default function Portfolio({ onReplay, onBack }) {
       }
       return {
         ...prev,
-        redbot: { ...w, open: true, minimized: false, z: nextZ, x, y, width, height },
+        redbot: {
+          ...w,
+          open: true,
+          minimized: false,
+          maximized: isMobile() ? true : w.maximized,
+          z: nextZ,
+          x,
+          y,
+          width,
+          height,
+        },
       }
     })
     focus('redbot', nextZ)
