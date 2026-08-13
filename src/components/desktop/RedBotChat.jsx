@@ -90,7 +90,7 @@ export default function RedBotChat() {
 
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto space-y-2 border border-[#00ff4120] rounded bg-[#050505] p-3"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-none space-y-2 border border-[#00ff4120] rounded bg-[#050505] p-3"
       >
         {messages.map((m, i) => (
           <Bubble key={i} role={m.role} text={m.text} />
