@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useBootSound } from '../../hooks/useBootSound'
 
 // Note this route only exists on Vercel — plain `vite dev` does not run
 // functions, so use `vercel dev` to exercise the chatbot locally. See
@@ -53,7 +52,6 @@ export default function RedBotChat() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const scrollRef = useRef(null)
-  const { playTypeKey } = useBootSound()
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -69,7 +67,6 @@ export default function RedBotChat() {
     setInput('')
     setError('')
     setPending(true)
-    playTypeKey()
 
     try {
       // Gemini requires the conversation to open on a 'user' turn, so the

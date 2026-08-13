@@ -1,6 +1,3 @@
-import TypeWriter from '../ui/TypeWriter'
-import { useBootSound } from '../../hooks/useBootSound'
-
 const SKILLS = [
   { cat: 'Frontend',  items: ['React', 'JavaScript', 'HTML / CSS', 'Three.js', 'GSAP', 'Next.js'] },
   { cat: 'Backend',   items: ['Node.js', 'Express', 'Python', 'REST APIs'] },
@@ -18,8 +15,6 @@ const INFO = [
 ]
 
 export default function About() {
-  const { playTypeKey } = useBootSound()
-
   return (
     <div className="space-y-6 py-6">
       {/* Header */}
@@ -36,14 +31,9 @@ export default function About() {
       {/* whoami */}
       <div className="border border-[#00ff4120] rounded bg-[#080808] p-4">
         <p className="text-[#ffb000] text-xs mb-3 opacity-60">{'>'} whoami</p>
-        <TypeWriter
-          className="text-sm text-[#00ff41] opacity-85 leading-relaxed"
-          text={"I'm a Bachelor of Science in Computer Science student with a strong interest in web development, machine learning, and python automation. I enjoy working on the logic behind applications—building systems that are efficient, scalable, and meaningful.\n\nOutside of technical work, I enjoy taking on leadership roles in school and student organizations, collaborating with others, and helping projects move forward as a team.\n\nI'm also deeply curious by nature and genuinely enjoy learning new technologies and tech stacks."}
-          speed={11}
-          sound={playTypeKey}
-          once
-          id="whoami"
-        />
+        <p className="text-sm text-[#00ff41] opacity-85 leading-relaxed whitespace-pre-line">
+          {"I'm a Bachelor of Science in Computer Science student with a strong interest in web development, machine learning, and python automation. I enjoy working on the logic behind applications—building systems that are efficient, scalable, and meaningful.\n\nOutside of technical work, I enjoy taking on leadership roles in school and student organizations, collaborating with others, and helping projects move forward as a team.\n\nI'm also deeply curious by nature and genuinely enjoy learning new technologies and tech stacks."}
+        </p>
       </div>
 
       {/* Skills grid */}

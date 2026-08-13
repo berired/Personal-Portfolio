@@ -211,32 +211,6 @@ export function useBootSound() {
     hum2.stop(t0 + duration + 0.05)
   }, [])
 
-  // Typewriter key click — soft mechanical tap per character
-  const playTypeKey = useCallback(() => {
-    const ctx = getCtx()
-    if (!ctx) return
-    const bufSize = Math.floor(ctx.sampleRate * 0.025)
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate)
-    const data = buf.getChannelData(0)
-    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1
-    const src = ctx.createBufferSource()
-    src.buffer = buf
-
-    const hiPass = ctx.createBiquadFilter()
-    hiPass.type = 'highpass'
-    hiPass.frequency.value = 2000
-
-    const env = ctx.createGain()
-    env.gain.setValueAtTime(0.055, ctx.currentTime)
-    env.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.022)
-
-    src.connect(hiPass)
-    hiPass.connect(env)
-    env.connect(getOut(ctx))
-    src.start(ctx.currentTime)
-    src.stop(ctx.currentTime + 0.03)
-  }, [])
-
   // Gate: play a sound only once per key (prevents double-fire in StrictMode)
   const once = useCallback((key, fn) => {
     if (playedRef.current.has(key)) return
@@ -244,7 +218,7 @@ export function useBootSound() {
     fn()
   }, [])
 
-  return { unlock, playPost, playTick, playProgress, playReady, playPowerUp, playTypeKey, once }
+  return { unlock, playPost, playTick, playProgress, playReady, playPowerUp, once }
 }
 
 // Ambient office bed: a faint fan hum, a hushed room hiss, and sparse
