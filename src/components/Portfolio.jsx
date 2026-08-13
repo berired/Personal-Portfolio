@@ -55,6 +55,18 @@ const BackIcon = () => (
   </svg>
 )
 
+// Mirrors Window.jsx's own TASKBAR_H — kept in sync there since that's the
+// component that actually renders against it during drag/resize.
+const TASKBAR_H = 56
+
+// Windows track focus order starting from z=1, which used to land well
+// under RobotBot's own z-40 — on a small screen where an open window fills
+// most of the corner it floats in, the widget would render on top of (and
+// steal clicks from) whatever content was underneath it. This offset keeps
+// every window above the widget regardless of focus order, so it only ever
+// covers bare desktop, never something the user is actually reading.
+const WINDOW_Z_BASE = 100
+
 const trayBtnCls =
   'inline-flex items-center justify-center min-h-[36px] min-w-[36px] px-1.5 text-[#00ff41] ' +
   'opacity-70 hover:opacity-100 hover:bg-[#0d1a0d] transition-opacity duration-150 rounded-sm'
@@ -123,8 +135,11 @@ export default function Portfolio({ onReplay, onBack }) {
           width = Math.min(880, vw * 0.92)
           height = Math.min(640, vh * 0.72)
           const cascade = APPS.findIndex((a) => a.id === id)
-          x = (vw - width) / 2 + cascade * 28
-          y = vh * 0.09 + cascade * 28
+          // Clamped so the cascade offset can never push a later app (or a
+          // narrow viewport) far enough right/down to carry the title bar's
+          // own close/minimize buttons off-screen.
+          x = Math.min((vw - width) / 2 + cascade * 28, vw - width)
+          y = Math.min(vh * 0.09 + cascade * 28, vh - TASKBAR_H - height)
         }
         return {
           ...prev,
@@ -187,7 +202,7 @@ export default function Portfolio({ onReplay, onBack }) {
         height = Math.min(560, vh * 0.78)
         // Anchored near the RobotBot widget it was opened from, clear of
         // both the taskbar and the widget itself.
-        x = vw - width - 16
+        x = Math.max(0, vw - width - 16)
         y = Math.max(16, vh - height - 88)
       }
       return {
@@ -244,7 +259,7 @@ export default function Portfolio({ onReplay, onBack }) {
               minimized={w.minimized}
               maximized={w.maximized}
               active={w.active}
-              zIndex={w.z}
+              zIndex={WINDOW_Z_BASE + w.z}
               x={w.x}
               y={w.y}
               width={w.width}
@@ -270,7 +285,7 @@ export default function Portfolio({ onReplay, onBack }) {
           minimized={windows.redbot.minimized}
           maximized={windows.redbot.maximized}
           active={windows.redbot.active}
-          zIndex={windows.redbot.z}
+          zIndex={WINDOW_Z_BASE + windows.redbot.z}
           x={windows.redbot.x}
           y={windows.redbot.y}
           width={windows.redbot.width}
