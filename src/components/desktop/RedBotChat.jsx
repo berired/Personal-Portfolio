@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { trackEvent } from '../../lib/analytics'
 
 // Note this route only exists on Vercel — plain `vite dev` does not run
 // functions, so use `vercel dev` to exercise the chatbot locally. See
@@ -67,6 +68,7 @@ export default function RedBotChat() {
     setInput('')
     setError('')
     setPending(true)
+    trackEvent('chatbot_message_sent')
 
     try {
       // The greeting bubble (always first, always 'model') is a client-only

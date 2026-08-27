@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { trackEvent } from '../../lib/analytics'
 
 const LINKS = [
   { label: 'email',    val: 'davidxanderwagan@gmail.com',                href: 'mailto:davidxanderwagan@gmail.com' },
@@ -60,9 +61,11 @@ export default function Contact() {
       await sendMail(form)
       setStatus(STATUS.ok)
       setForm(INITIAL)
+      trackEvent('contact_form_submit', { status: 'success' })
     } catch (err) {
       setStatus(STATUS.err)
       setErrMsg(err.message)
+      trackEvent('contact_form_submit', { status: 'error' })
     }
   }
 

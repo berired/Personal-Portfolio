@@ -5,6 +5,7 @@ import Portfolio from './components/Portfolio'
 import { LINES, TOTAL_BLOCKS } from './components/ui/bootLines'
 import { useIntroTimeline, loadGsap } from './hooks/useIntroTimeline'
 import { startOfficeAmbience, stopOfficeAmbience } from './hooks/useBootSound'
+import { trackEvent } from './lib/analytics'
 
 // three + drei + gsap + postprocessing are the bulk of the bundle. Splitting
 // them out means the splash paints without waiting on them, and they download
@@ -108,6 +109,7 @@ export default function App() {
       setWashing(true)
       setPhase('portfolio')
       setExiting(false)
+      trackEvent('enter_portfolio')
     })
   }, [exiting])
 
