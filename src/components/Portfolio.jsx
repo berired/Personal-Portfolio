@@ -4,13 +4,15 @@ import DesktopIcon from './desktop/DesktopIcon'
 import Taskbar from './desktop/Taskbar'
 import RobotBot from './desktop/RobotBot'
 import RedBotChat from './desktop/RedBotChat'
-import { PersonIcon, PaperIcon, ComputerIcon, MailIcon, CopyrightIcon, RobotIcon } from './desktop/icons'
+import { PersonIcon, PaperIcon, ComputerIcon, MailIcon, CopyrightIcon, RobotIcon, PrinterIcon } from './desktop/icons'
 import About from './sections/About'
 import Experience from './sections/Experience'
 import Projects from './sections/Projects'
 import Contact from './sections/Contact'
 import Credits from './sections/Credits'
+import Resume from './sections/Resume'
 import { useMuted, startCrtHum, stopCrtHum } from '../hooks/useBootSound'
+import { trackEvent } from '../lib/analytics'
 
 const iconProps = {
   width: 16,
@@ -82,6 +84,7 @@ const APPS = [
   { id: 'about', label: 'About', cmd: './about', Icon: PersonIcon, Component: About },
   { id: 'experience', label: 'Experience', cmd: './experience', Icon: PaperIcon, Component: Experience },
   { id: 'projects', label: 'Projects', cmd: './projects', Icon: ComputerIcon, Component: Projects },
+  { id: 'resume', label: 'Resume', cmd: './resume', Icon: PrinterIcon, Component: Resume },
   { id: 'contact', label: 'Contact', cmd: './contact', Icon: MailIcon, Component: Contact },
   { id: 'credits', label: 'Credits', cmd: './credits', Icon: CopyrightIcon, Component: Credits },
 ]
@@ -128,6 +131,7 @@ export default function Portfolio({ onReplay, onBack }) {
 
   const openApp = useCallback(
     (id) => {
+      trackEvent('open_window', { window_id: id })
       const nextZ = topZ + 1
       setTopZ(nextZ)
       setWindows((prev) => {

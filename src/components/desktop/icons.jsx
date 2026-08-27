@@ -67,6 +67,17 @@ export function CopyrightIcon(props) {
   )
 }
 
+export function PrinterIcon(props) {
+  return (
+    <svg {...line} {...props}>
+      <path d="M7 8.5V3.5h10v5" />
+      <rect x="3" y="8.5" width="18" height="8.5" rx="1.5" />
+      <path d="M7 14h10v6.5H7z" />
+      <path d="M7.5 11.2h1.5" />
+    </svg>
+  )
+}
+
 export function RobotIcon(props) {
   return (
     <svg {...line} {...props}>
