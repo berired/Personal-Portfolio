@@ -71,6 +71,7 @@ const Scene = forwardRef(function Scene(
     >
       <color attach="background" args={['#cfd6de']} />
 
+      {/* Bright daytime office. */}
       <ambientLight intensity={0.9} color="#ffffff" />
       <hemisphereLight args={['#e8edf4', '#9aa1ab', 0.6]} />
       <directionalLight
@@ -81,6 +82,8 @@ const Scene = forwardRef(function Scene(
         shadow-mapSize={[1024, 1024]}
       />
 
+      {/* Everything that depends on the loaded model lives here, so the camera
+          can never animate over an empty room. */}
       <Suspense fallback={null}>
         <Stage
           timelineRef={timelineRef}
