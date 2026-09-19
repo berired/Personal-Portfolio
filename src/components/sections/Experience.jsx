@@ -1,6 +1,14 @@
 // Add your real work experience entries here
 const ENTRIES = [
   {
+    title: 'Frontend Developer',
+    company: 'Trampetti',
+    period: 'August 2026 - Present',
+    desc: 'Building and refining the frontend at Trampetti.',
+    stack: ['Next.js', 'Tailwind CSS', 'TypeScript']
+  },
+
+  {
     title: 'Fullstack Web Developer - Volunteer',
     company: 'ArterionPH',
     period: 'January 2026 - Present',

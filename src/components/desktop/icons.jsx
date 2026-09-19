@@ -91,6 +91,16 @@ export function RobotIcon(props) {
   )
 }
 
+export function BadgeIcon(props) {
+  return (
+    <svg {...line} {...props}>
+      <circle cx="12" cy="9.5" r="6" />
+      <path d="M8.5 21 12 18l3.5 3-1-6.5m-5 0L8.5 21" strokeWidth="1.3" />
+      <path d="m9.3 9.5 1.8 1.8 3.6-3.6" strokeWidth="1.4" />
+    </svg>
+  )
+}
+
 /* ── Window chrome icons ─────────────────────────────────────────────── */
 
 export function MinimizeGlyph(props) {
