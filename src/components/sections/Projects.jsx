@@ -28,14 +28,14 @@ const PERSONAL = [
     desc: 'A calendar bot for Discord using Python.',
     stack: ['Python'],
     year: '2026',
-    link: 'https://github.com/berired',
+    link: 'https://github.com/berired/Discord-Calendar-Bot',
   },
   {
     title: 'Coffee Shop Landing Page',
     desc: 'A Coffee Shop Landing Page using React.',
     stack: ['React', 'HTML', 'CSS'],
     year: '2025',
-    link: 'https://github.com/berired',
+    link: 'https://github.com/berired/Coffee-Shop-Landing',
   },
   {
     title: 'Pulse',
@@ -43,7 +43,63 @@ const PERSONAL = [
     stack: ['React', 'Node.js', 'Express', 'Supabase'],
     year: '2026',
     link: 'https://github.com/berired/Pulse'
-  }
+  },
+  {
+    title: 'Ani-Track',
+    desc: 'A Letterboxd-style anime tracker: log episodes with half-star ratings and watch dates, write reviews, build lists, and follow friends.',
+    stack: ['Next.js', 'TypeScript', 'Supabase'],
+    year: '2026',
+    link: 'https://github.com/berired/Ani-Track',
+  },
+  {
+    title: 'Flippr Flashcards',
+    desc: 'A flashcard app for studying with spaced repetition.',
+    stack: ['Next.js', 'TypeScript', 'Tailwind CSS'],
+    year: '2026',
+    link: 'https://github.com/berired/flippr-flashcards',
+  },
+  {
+    title: 'Lanesplit',
+    desc: 'A fantasy draft app for League of Legends — build your league, draft your roster.',
+    stack: ['Next.js', 'TypeScript', 'Prisma'],
+    year: '2026',
+    link: 'https://github.com/berired/lanesplit',
+  },
+  {
+    title: 'Fishbowl Photobooth',
+    desc: 'A kiosk-style photobooth web app: pick a package and frame, take a burst of webcam photos, and the composited image is sent into a new Canva design via the Canva Connect API.',
+    stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Zustand'],
+    year: '2026',
+    link: 'https://github.com/berired/fishbowl-photobooth',
+  },
+  {
+    title: 'Stock Market API',
+    desc: 'A data science-driven API for stock market data.',
+    stack: ['Python'],
+    year: '2025',
+    link: 'https://github.com/berired/stockmarketapi',
+  },
+  {
+    title: 'Discord Repo Notifier',
+    desc: 'A Discord bot that sends real-time notifications to a server whenever commits are pushed to a GitHub repository.',
+    stack: ['Python', 'Discord.py'],
+    year: '2026',
+    link: 'https://github.com/berired/discord-repo-notifier',
+  },
+  {
+    title: 'SmartFinance',
+    desc: 'SmartFinance: a personalized financial advisor.',
+    stack: ['Python', 'JavaScript'],
+    year: '2025',
+    link: 'https://github.com/berired/SmartFinance',
+  },
+  {
+    title: 'UnMasked',
+    desc: 'A full-stack productivity, wellness, and habit-tracking app built for the Hackers-1 Hackathon — mood and daily log tracking, journaling, planning, reminders, and streaks.',
+    stack: ['React', 'JavaScript'],
+    year: '2026',
+    link: 'https://github.com/berired/UnMasked',
+  },
 ]
 
 const SCHOOL = [
@@ -59,14 +115,14 @@ const SCHOOL = [
     desc: 'Multi-page Product Catalog for Web Programming Midterms.',
     stack: ['React', 'JavaScript', 'CSS'],
     year: '2024',
-    link: 'https://github.com/berired',
+    link: 'https://github.com/berired/Web-Programming-Midterms',
   },
   {
     title: 'KamunEats',
     desc: 'A restaurant locator website for STS Finals Project.',
     stack: ['HTML', 'CSS', 'JavaScript'],
     year: '2024',
-    link: 'https://github.com/berired',
+    link: 'https://github.com/berired/KamunEats',
   },
   {
     title: 'Hibla ng Kasaysayan',
@@ -109,7 +165,56 @@ const SCHOOL = [
     stack: ['JavaScript', 'CSS', 'React', 'Python'],
     year: '2026',
     link: 'https://github.com/berired/Web-Programming-Finals'
-  }
+  },
+  {
+    title: 'Thesis Repository',
+    desc: 'Ongoing thesis web application and documentation.',
+    stack: ['Next.js', 'TypeScript'],
+    year: '2026',
+    link: 'https://github.com/berired/Thesis-Repository',
+  },
+  {
+    title: 'Automata Finals',
+    desc: 'Automata Theory Finals project: a credit card transaction validator.',
+    stack: ['JavaScript', 'HTML', 'CSS'],
+    year: '2025',
+    link: 'https://github.com/berired/Automata-Finals',
+  },
+  {
+    title: 'DormieTorium',
+    desc: 'A dorm/roommate finder platform for CIITzens. Finals startup project for Technopreneurship.',
+    stack: ['JavaScript', 'HTML', 'CSS'],
+    year: '2026',
+    link: 'https://github.com/berired/DormieTorium',
+  },
+  {
+    title: 'Laravel Login System',
+    desc: 'Dynamic Web Programming Activity 5: a login system built with Laravel.',
+    stack: ['PHP', 'Blade'],
+    year: '2026',
+    link: 'https://github.com/berired/Laboratory-Activity-Build-a-Laravel-Login-System',
+  },
+  {
+    title: 'Dynamic Web Midterms',
+    desc: 'Midterm laboratory examination for Dynamic Web Programming.',
+    stack: ['Next.js', 'TypeScript'],
+    year: '2026',
+    link: 'https://github.com/berired/dynamic-web-midterms',
+  },
+  {
+    title: 'Advance Routing Lab',
+    desc: 'A lab exercise on advanced routing.',
+    stack: ['Next.js', 'TypeScript'],
+    year: '2026',
+    link: 'https://github.com/berired/lab-exerice-advance-routing',
+  },
+  {
+    title: 'CS Elective Laboratory 1',
+    desc: 'A laboratory exercise for a CS elective course.',
+    stack: ['Next.js', 'TypeScript'],
+    year: '2026',
+    link: 'https://github.com/berired/CS-ELEC-Laboratory-1',
+  },
 ]
 
 const FREELANCE = [

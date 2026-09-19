@@ -10,7 +10,7 @@
 
 import { checkRateLimit } from './_lib/rateLimit.js'
 
-const GROQ_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.6-27b'
+const GROQ_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 
 const LIMITS = { messages: 40, text: 2000 }
@@ -122,7 +122,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: GROQ_MODEL,
         messages: chatMessages,
-        // qwen/qwen3.6-27b is a reasoning model — without this it burns the
+        // qwen/qwen3.8-27b is a reasoning model — without this it burns the
         // whole token budget on a hidden <think> block and returns nothing.
         reasoning_effort: 'none',
         temperature: 0.7,

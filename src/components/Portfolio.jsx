@@ -4,13 +4,14 @@ import DesktopIcon from './desktop/DesktopIcon'
 import Taskbar from './desktop/Taskbar'
 import RobotBot from './desktop/RobotBot'
 import RedBotChat from './desktop/RedBotChat'
-import { PersonIcon, PaperIcon, ComputerIcon, MailIcon, CopyrightIcon, RobotIcon, PrinterIcon } from './desktop/icons'
+import { PersonIcon, PaperIcon, ComputerIcon, MailIcon, CopyrightIcon, RobotIcon, PrinterIcon, BadgeIcon } from './desktop/icons'
 import About from './sections/About'
 import Experience from './sections/Experience'
 import Projects from './sections/Projects'
 import Contact from './sections/Contact'
 import Credits from './sections/Credits'
 import Resume from './sections/Resume'
+import Certificates from './sections/Certificates'
 import { useMuted, startCrtHum, stopCrtHum } from '../hooks/useBootSound'
 import { trackEvent } from '../lib/analytics'
 
@@ -85,6 +86,7 @@ const APPS = [
   { id: 'experience', label: 'Experience', cmd: './experience', Icon: PaperIcon, Component: Experience },
   { id: 'projects', label: 'Projects', cmd: './projects', Icon: ComputerIcon, Component: Projects },
   { id: 'resume', label: 'Resume', cmd: './resume', Icon: PrinterIcon, Component: Resume },
+  { id: 'certificates', label: 'Certificates', cmd: './certificates', Icon: BadgeIcon, Component: Certificates },
   { id: 'contact', label: 'Contact', cmd: './contact', Icon: MailIcon, Component: Contact },
   { id: 'credits', label: 'Credits', cmd: './credits', Icon: CopyrightIcon, Component: Credits },
 ]
